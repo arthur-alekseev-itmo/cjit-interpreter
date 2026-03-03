@@ -39,3 +39,7 @@
 
 # debug information files
 *.dwo
+
+# Mac + idea workspace
+.DS_Store
+.idea/*
