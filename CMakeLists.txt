@@ -58,12 +58,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(cjit_interpreter main.cpp
         utils/utils.cpp
         utils/utils.hpp
-        cnp/interpreter.hpp
-        cnp/interpreter.cpp
-        cnp/stencils.cpp
-        cnp/stencils.hpp
         ir/ir.cpp
         ir/ir.hpp
+        cnp/CnpFunction.cpp
+        cnp/CnpFunction.h
+        cnp/stencil/CnpStencil.cpp
+        cnp/stencil/CnpStencil.h
+        cnp/CnpSymbol.cpp
+        cnp/CnpSymbol.h
+        cnp/stencil/CnpStencilFactory.cpp
+        cnp/stencil/CnpStencilFactory.h
+        cnp/stencil/CnpStencilCollection.cpp
+        cnp/stencil/CnpStencilCollection.h
+        cnp/CnpInterpreter.cpp
+        cnp/CnpInterpreter.h
 
 )
 

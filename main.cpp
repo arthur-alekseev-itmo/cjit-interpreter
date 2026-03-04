@@ -1,12 +1,11 @@
 
-
-#include "cnp/interpreter.hpp"
-#include "cnp/stencils.hpp"
 #include "ir/ir.hpp"
 #include <vector>
 
+#include "cnp/CnpInterpreter.h"
+#include "cnp/stencil/CnpStencilFactory.h"
+
 int main(int argc, char** argv) {
-    const auto stencils = create_stencils();
 
     const auto bc_math_example = std::vector(
         std::begin(basic_math_example),
@@ -18,7 +17,14 @@ int main(int argc, char** argv) {
         std::end(infinite_loop_example)
     );
 
-    interpret_cnp(bc_loop, stencils->data());
+    const auto bc_print_42 = std::vector(
+        std::begin(print_42),
+        std::end(print_42)
+    );
+
+    const auto stencil_factory = CnpStencilFactory();
+    const auto interpreter = CnpInterpreter(stencil_factory.create());
+    interpreter.execute(bc_math_example);
 
     return 0;
 }

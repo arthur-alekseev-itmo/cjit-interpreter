@@ -12,6 +12,10 @@ extern void cnp_func_hole(void) STENCIL;
 #define STENCIL_HOLE(type) \
 (type)((uintptr_t)&cnp_value_hole)
 
+#define STENCIL_FN_HOLE(return_type, ...) \
+typedef return_type(*stencil_fn)(__VA_ARGS__); \
+stencil_fn fn_hole = (stencil_fn)STENCIL_HOLE(size_t);
+
 #define DECLARE_STENCIL_OUTPUT(...) \
 typedef void(*stencil_output_fn)(__VA_ARGS__) STENCIL; \
 stencil_output_fn stencil_output = (stencil_output_fn)&cnp_func_hole;
@@ -47,6 +51,12 @@ STENCIL void st_dup(uint64_t *stack_top) {
     stencil_output(stack_top);
 }
 
+STENCIL void st_drop(uint64_t *stack_top) {
+    POP(_);
+    DECLARE_STENCIL_OUTPUT(uint64_t*);
+    stencil_output(stack_top);
+}
+
 STENCIL void st_mul(uint64_t *stack_top) {
     POP(left);
     POP(right);
@@ -55,13 +65,10 @@ STENCIL void st_mul(uint64_t *stack_top) {
     stencil_output(stack_top);
 }
 
-STENCIL void st_print(uint64_t *stack_top) {
+STENCIL void st_call_c_ui64(uint64_t *stack_top) {
     POP(value);
-    char fmt[3];
-    fmt[0] = 37;
-    fmt[1] = 100;
-    fmt[2] = 0;
-    print_int(value);
+    STENCIL_FN_HOLE(uint64_t, uint64_t);
+    PUSH(fn_hole(value));
     DECLARE_STENCIL_OUTPUT(uint64_t*);
     stencil_output(stack_top);
 }
