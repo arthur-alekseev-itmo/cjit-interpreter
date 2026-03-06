@@ -1,5 +1,5 @@
 #pragma once
-#include <cassert>
+
 #include <cstdint>
 #include <iostream>
 #include <ostream>
@@ -26,12 +26,12 @@ enum opcode {
 // TODO: Unify with declaration
 std::size_t opcode_size(opcode oc);
 
-inline void my_print(std::uint64_t value) {
-    std::cout << value << std::endl;
-}
+void my_print(uint64_t argument);
 
-inline const uint8_t* print_addr = reinterpret_cast<uint8_t*>(&my_print);
+inline const std::uint8_t* my_print_addr = reinterpret_cast<std::uint8_t*>(&my_print);
 static_assert(sizeof(&my_print) == 8);
+
+#define MY_PRINT my_print_addr[0], my_print_addr[1], my_print_addr[2], my_print_addr[3], my_print_addr[4], my_print_addr[5], my_print_addr[6], my_print_addr[7]
 
 
 inline uint8_t basic_math_example[] = {
@@ -48,12 +48,12 @@ inline uint8_t infinite_loop_example[] = {
     LOAD_IMM, 0x01, 0x00, 0x00, 0x00, // Load 1
     ADD,                              // Add
     DUP,                              // Dup
-    CALL_C_V_U64,                     // Print
+    CALL_C_V_U64, MY_PRINT,           // Print
     JUMP, 0x01, 0x00, 0x00, 0x00      // Jump 0x01
 };
 
 inline uint8_t print_42[] = {
     LOAD_IMM, 0x2a, 0x00, 0x00, 0x00, // Load 42
-    CALL_C_V_U64,                     // Print
+    CALL_C_V_U64, MY_PRINT,           // Print
     RETURN                            // Return
 };

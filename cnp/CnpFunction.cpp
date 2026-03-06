@@ -1,7 +1,3 @@
-//
-// Created by Arthur Alekseev on 04.03.2026.
-//
-
 #include "CnpFunction.h"
 
 #include <cassert>
@@ -12,6 +8,7 @@
 
 namespace
 {
+    // TODO: Create a separate JIT-Compiler entity to create functions
     void apply_bytecode_instruction(
         const bytecode_ptr bc_slice,
         std::size_t& ip,
@@ -32,12 +29,18 @@ namespace
             );
             ADVANCE(5);
         case CALL_C_V_U64:
-            stencils[opcode].patch(
-                target,
-                target_offset,
-                {reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1])}
-            );
-            ADVANCE(1);
+            {
+                // TODO: Make a load system for functions
+                const auto call_address = reinterpret_cast<uintptr_t>(&my_print);
+                const uint32_t call_address_left = call_address >> 32;
+                const uint32_t call_address_right = call_address & 0xffffffff;
+                stencils[opcode].patch(
+                    target,
+                    target_offset,
+                    {&call_address_left, &call_address_right}
+                );
+                ADVANCE(9);
+            }
         case MUL:
         case ADD:
         case EXIT:

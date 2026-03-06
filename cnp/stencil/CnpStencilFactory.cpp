@@ -2,7 +2,6 @@
 #include "CnpStencilFactory.h"
 
 #include <memory>
-#include <iostream>
 #include <fstream>
 #include <LIEF/LIEF.hpp>
 
@@ -43,6 +42,10 @@ namespace
         for (const auto& relocation : relocations) {
             const auto address = relocation.address();
 
+            if (!relocation.has_section() || relocation.section()->name() != ".text") {
+                continue;
+            }
+
             if (address < symbol->value() || address >= symbol->value() + stencil_size) {
                 continue;
             }
@@ -64,8 +67,7 @@ namespace
             return 0;
         }
         const std::string stencil_compile_cmd = "clang -O3 -fno-pic -c " + sources + " -o " + output;
-        // return exec_silent(stencil_compile_cmd.c_str());
-        return -1;
+        return exec_silent(stencil_compile_cmd.c_str());
     }
 
     void fill_jump_stencils(std::vector<CnpStencil>& stencils) {
@@ -84,12 +86,7 @@ namespace
 #endif
     }
 
-    std::vector<CnpStencil> create_stencils() {
-        const std::string stencil_location = "stencils/basic_stencils.c";
-        const std::string stencil_obj = "basic_stencils.o";
-
-        ensure_stencil_file(stencil_location, stencil_obj);
-
+    std::vector<CnpStencil> create_stencils(const std::string& stencil_obj) {
         auto stencils = std::vector<CnpStencil>(STENCIL_COUNT);
         const auto binary = LIEF::ELF::Parser::parse(stencil_obj);
 
@@ -99,7 +96,7 @@ namespace
         PARSE_STENCIL(LOAD_IMM, "st_load_imm");
         PARSE_STENCIL(ADD, "st_add");
         PARSE_STENCIL(MUL, "st_mul");
-        PARSE_STENCIL(CALL_C_V_U64, "st_call_c_ui64");
+        PARSE_STENCIL(CALL_C_V_U64, "st_call_c_u64");
         PARSE_STENCIL(EXIT, "st_exit");
         PARSE_STENCIL(DUP, "st_dup");
         PARSE_STENCIL(DROP, "st_dup");
@@ -112,13 +109,15 @@ namespace
 }
 
 std::unique_ptr<CnpStencilCollection> CnpStencilFactory::create() const {
+    // TODO: Uncomment, currently hangs in debugger
     ensure_stencil_file(this->stencil_path_, this->stencil_binary_path_);
-    const auto stencils = create_stencils();
+    const auto stencils = create_stencils(this->stencil_binary_path_);
     return std::make_unique<CnpStencilCollection>(stencils);
 }
 
 CnpStencilFactory::CnpStencilFactory() {
     this->stencil_path_ = "stencils/basic_stencils.c";
+    this->stencil_binary_path_ = "basic_stencils.o";
     this->recompile_ = false;
 }
 
@@ -133,6 +132,7 @@ CnpStencilFactory* CnpStencilFactory::set_stencil_binary(const std::string& path
 }
 
 CnpStencilFactory* CnpStencilFactory::set_recompile(const bool recompile) {
+    // TODO: Use!
     this->recompile_ = recompile;
     return this;
 }

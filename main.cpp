@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
     const auto stencil_factory = CnpStencilFactory();
     const auto interpreter = CnpInterpreter(stencil_factory.create());
-    interpreter.execute(bc_math_example);
+    interpreter.execute(bc_loop);
 
     return 0;
 }
