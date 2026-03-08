@@ -22,9 +22,14 @@ int main(int argc, char** argv) {
         std::end(print_42)
     );
 
+    const auto bc_print_10_factorial = std::vector(
+        std::begin(print_10_factorial),
+        std::end(print_10_factorial)
+    );
+
     const auto stencil_factory = CnpStencilFactory();
     const auto interpreter = CnpInterpreter(stencil_factory.create());
-    interpreter.execute(bc_loop);
+    interpreter.execute(bc_print_10_factorial);
 
     return 0;
 }

@@ -5,6 +5,9 @@
 #include <sys/mman.h>
 
 #define ADVANCE(size) ip += size; break
+#define JUMP_SIZE 5
+#define EXTRACT_ARGUMENT_VALUE(type, offset) *reinterpret_cast<const type*>(&bc_slice[ip + (offset)])
+#define EXTRACT_ARGUMENT_PTR(type, offset) reinterpret_cast<const type*>(&bc_slice[ip + (offset)])
 
 namespace
 {
@@ -21,17 +24,20 @@ namespace
         switch (opcode) {
         case NOP:
             ADVANCE(1);
+        case READ_STACK:
+        case WRITE_STACK:
         case LOAD_IMM:
             stencils[opcode].patch(
                 target,
                 target_offset,
-                {reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1])}
+                {EXTRACT_ARGUMENT_PTR(uint32_t, 1)}
             );
             ADVANCE(5);
+        case CALL_C_V_STACK_PTR:
         case CALL_C_V_U64:
             {
                 // TODO: Make a load system for functions
-                const auto call_address = reinterpret_cast<uintptr_t>(&my_print);
+                const auto call_address = EXTRACT_ARGUMENT_VALUE(intptr_t, 1);
                 const uint32_t call_address_left = call_address >> 32;
                 const uint32_t call_address_right = call_address & 0xffffffff;
                 stencils[opcode].patch(
@@ -45,18 +51,21 @@ namespace
         case ADD:
         case EXIT:
         case DUP:
+        case EQ:
         case RETURN:
             stencils[opcode].patch(target, target_offset, {});
             ADVANCE(1);
+        case JUMP_TRUE:
         case JUMP:
             {
                 const auto jump_addr_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
                 const auto jump_addr = jumps[jump_addr_index];
-                const auto relative_jump = jump_addr - target_offset;
+                const auto relative_jump = jump_addr - target_offset - JUMP_SIZE;
+                const auto relative_jump_patch_addr = reinterpret_cast<const uint32_t*>(&relative_jump);
                 stencils[opcode].patch(
                     target,
                     target_offset,
-                    {reinterpret_cast<const uint32_t*>(&relative_jump)}
+                    {relative_jump_patch_addr}
                 );
                 ADVANCE(5);
             }
@@ -104,19 +113,17 @@ namespace
         assert (code != MAP_FAILED);
 
         const auto result = reinterpret_cast<cnp_function_ptr>(code);
-        auto jump_addresses = std::vector<std::size_t>(0);
 
         std::size_t target_offset = 0;
 
         for (std::size_t ip = 0; ip < bc.size();) {
-            jump_addresses.push_back(target_offset);
             apply_bytecode_instruction(
                 bc.data(),
                 ip,
                 target_offset,
                 code,
                 stencils,
-                jump_addresses
+                instruction_starts
             );
         }
 
@@ -143,7 +150,10 @@ cnp_function_ptr CnpFunction::get_function_ptr() const {
     return this->function_ptr_;
 }
 
-CnpFunction::CnpFunction(const CnpStencilCollection& stencils, bytecode& bc) {
+CnpFunction::CnpFunction(
+    const CnpStencilCollection& stencils,
+    bytecode& bc
+) {
     const auto [
         function_ptr,
         function_size

@@ -70,6 +70,7 @@ namespace
         return exec_silent(stencil_compile_cmd.c_str());
     }
 
+    // TODO: Remove: there is a way to generate stencils with jump
     void fill_jump_stencils(std::vector<CnpStencil>& stencils) {
 #if defined(__arm__)
         throw std::runtime_error("Architecture __arm__ not yet supported");
@@ -97,10 +98,15 @@ namespace
         PARSE_STENCIL(ADD, "st_add");
         PARSE_STENCIL(MUL, "st_mul");
         PARSE_STENCIL(CALL_C_V_U64, "st_call_c_u64");
+        PARSE_STENCIL(CALL_C_V_STACK_PTR, "st_call_c_stack_ptr");
         PARSE_STENCIL(EXIT, "st_exit");
         PARSE_STENCIL(DUP, "st_dup");
-        PARSE_STENCIL(DROP, "st_dup");
+        PARSE_STENCIL(DROP, "st_drop");
         PARSE_STENCIL(RETURN, "st_return");
+        PARSE_STENCIL(READ_STACK, "st_read_stack");
+        PARSE_STENCIL(WRITE_STACK, "st_write_stack");
+        PARSE_STENCIL(JUMP_TRUE, "st_jump_true");
+        PARSE_STENCIL(EQ, "st_eq");
 
         fill_jump_stencils(stencils);
 

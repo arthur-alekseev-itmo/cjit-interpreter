@@ -10,15 +10,23 @@ std::size_t opcode_size(const opcode oc) {
     case DUP:
     case DROP:
     case RETURN:
+    case EQ:
     case MUL: return 1;
     case JUMP:
+    case JUMP_TRUE:
+    case READ_STACK:
+    case WRITE_STACK:
     case LOAD_IMM: return 5;
-    case CALL_C_V_U64: return 9; // TODO: Must be more
+    case CALL_C_V_STACK_PTR:
+    case CALL_C_V_U64: return 9;
     default: assert(false);
     }
 }
 
-void my_print(std::uint64_t argument) {
-    std::cout << argument << std::endl;
+void my_print(uint64_t argument) {
+     std::cout << argument << std::endl;
 }
 
+void my_debug_view(uint64_t* stack) {
+
+}

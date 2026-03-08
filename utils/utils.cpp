@@ -23,8 +23,8 @@ int exec_print(const char* command) {
 }
 
 int exec_silent(const char* command) {
-
     FILE* fp = popen(command, "r");
+
     if (fp == nullptr) {
         printf("Failed to run command\n");
         exit(1);
