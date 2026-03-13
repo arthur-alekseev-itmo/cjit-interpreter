@@ -7,23 +7,24 @@
 
 #include "../../ir/ir.hpp"
 #include "../../utils/utils.hpp"
+#include "../parsing/BinaryWrapper.hpp"
+#include "../parsing/MachOBinaryWrapper.hpp"
 
 
 #define STENCIL_COUNT NUM_OPCODES
 #define CNP_VALUE_HOLE_NAME "cnp_value_hole"
 #define CNP_STENCIL_OUTPUT "cnp_func_hole"
-#define JUMP_INSTRUCTION_SIZE 6
+#define JUMP_INSTRUCTION_SIZE 4
 
-namespace
-{
-    CnpStencil parse_stencil(const LIEF::ELF::Binary* binary, const LIEF::Symbol* symbol)
-    {
+namespace {
+    CnpStencil parse_stencil(const BinaryWrapper* binary, const LIEF::Symbol* symbol) {
         if (symbol == nullptr) {
             throw std::runtime_error("Cannot find a stencil");
         }
 
-        const auto section = binary->get_section(".text");
+        const auto section = binary->get_text_section();
 
+        // TODO: FIX FOR MACH-O
         const auto jump_instr_len = symbol->name() == "st_return" ? 0 : JUMP_INSTRUCTION_SIZE;
         const auto stencil_size = symbol->size() - jump_instr_len;
         const auto stencil_offset = symbol->value();
@@ -37,25 +38,11 @@ namespace
             stencil_size
         );
 
-        const auto relocations = binary->relocations();
+        const auto relocations = binary->get_relocations_for_symbol(symbol);
 
         for (const LIEF::ELF::Relocation& relocation : relocations) {
             const auto address = relocation.address();
-
-            if (!relocation.has_section() || relocation.section()->name() != ".text") {
-                continue;
-            }
-
-            if (address < symbol->value() || address >= symbol->value() + stencil_size) {
-                continue;
-            }
-
-            const auto type = relocation.type();
-            const auto offset = address - symbol->value();
-            patches.emplace_back(
-                static_cast<LIEF::ELF::RELOC_x86_64>(type),
-                offset
-            );
+            patch_addresses.push_back(address - symbol->value());
         }
 
         return {symbol->name(), std::move(code), std::move(patches)};
@@ -92,7 +79,13 @@ namespace
 
     std::vector<CnpStencil> create_stencils(const std::string& stencil_obj) {
         auto stencils = std::vector<CnpStencil>(STENCIL_COUNT);
+#if defined(__aarch64__)
+        const auto binary = std::make_unique<MachOBinaryWrapper>(stencil_obj);
+#elif defined(__x86_64__)
         const auto binary = LIEF::ELF::Parser::parse(stencil_obj);
+#else
+        throw std::runtime_error("Unknown architecture");
+#endif
 
         #define PARSE_STENCIL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name));
 

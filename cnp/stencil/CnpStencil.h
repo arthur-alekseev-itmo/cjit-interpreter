@@ -4,6 +4,7 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <vector>
 
 #include "../../cmake-build-debug/_deps/lief-src/include/LIEF/ELF/enums.hpp"
 #include "LIEF/MachO/enums.hpp"
