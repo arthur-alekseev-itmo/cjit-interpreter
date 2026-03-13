@@ -72,6 +72,10 @@ add_executable(cjit_interpreter main.cpp
         cnp/stencil/CnpStencilCollection.h
         cnp/CnpInterpreter.cpp
         cnp/CnpInterpreter.h
+        cnp/parsing/BinaryWrapper.cpp
+        cnp/parsing/BinaryWrapper.hpp
+        cnp/parsing/MachOBinaryWrapper.cpp
+        cnp/parsing/MachOBinaryWrapper.hpp
 
 )
 

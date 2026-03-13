@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
 struct CnpStencil {
     std::vector<uint8_t> code;
