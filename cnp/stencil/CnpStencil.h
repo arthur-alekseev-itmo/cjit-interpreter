@@ -4,15 +4,22 @@
 #include <memory>
 #include <vector>
 
+struct CnpPatchAddress {
+    std::size_t address;
+    std::uint8_t bit_size;
+
+    CnpPatchAddress(std::size_t address, std::size_t size) : address(address), bit_size(size) {}
+};
+
 struct CnpStencil {
     std::vector<uint8_t> code;
-    std::vector<std::size_t> patches_addresses;
+    std::vector<CnpPatchAddress> patches_addresses;
 
     [[nodiscard]] std::size_t size() const;
 
     CnpStencil(
         std::vector<uint8_t> code,
-        std::vector<std::size_t> patches_addresses
+        std::vector<CnpPatchAddress> patches_addresses
     ) : code(std::move(code)), patches_addresses(std::move(patches_addresses)) {}
 
     void patch(

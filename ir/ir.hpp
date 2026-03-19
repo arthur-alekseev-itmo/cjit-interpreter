@@ -80,7 +80,6 @@ inline uint8_t print_42[] = {
     RETURN                            // Return
 };
 
-
 // TODO: INSTRUCTION COMMENTS ARE WRONG HERE!!
 inline uint8_t print_10_factorial[] = {
     LOAD_IMM, SMALL_CONST(10),        // [a]

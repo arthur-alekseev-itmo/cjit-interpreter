@@ -26,7 +26,7 @@ void CnpStencil::patch(
         const auto* data = reinterpret_cast<const uint8_t*>(patch);
 
         std::memcpy(
-            target_addr + patch_address,
+            target_addr + patch_address.address,
             data,
             sizeof(uint32_t)
         );

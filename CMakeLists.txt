@@ -45,7 +45,9 @@ else()
     endif()
 endif()
 
-
+if(APPLE)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -gdwarf-4 -fno-limit-debug-info")
+endif()
 
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded" CACHE STRING "CRT option")
@@ -76,6 +78,8 @@ add_executable(cjit_interpreter main.cpp
         cnp/parsing/BinaryWrapper.hpp
         cnp/parsing/MachOBinaryWrapper.cpp
         cnp/parsing/MachOBinaryWrapper.hpp
+        cnp/parsing/SymbolWrapper.cpp
+        cnp/parsing/SymbolWrapper.h
 
 )
 
