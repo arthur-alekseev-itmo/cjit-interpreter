@@ -14,10 +14,19 @@
 #define STENCIL_COUNT NUM_OPCODES
 #define CNP_VALUE_HOLE_NAME "cnp_value_hole"
 #define CNP_STENCIL_OUTPUT "cnp_func_hole"
-#define JUMP_INSTRUCTION_SIZE 4
+
+#if defined(__arm__)
+        throw std::runtime_error("Architecture __arm__ not yet supported");
+#elif defined(__aarch64__)
+    #define JUMP_INSTRUCTION_SIZE 4
+#elif defined(__x86_64__)
+    #define JUMP_INSTRUCTION_SIZE 6
+#else
+throw std::runtime_error("Unknown architecture");
+#endif
 
 namespace {
-    CnpStencil parse_stencil(const BinaryWrapper* binary, const LIEF::Symbol* symbol) {
+    CnpStencil parse_stencil(const BinaryWrapper* binary, const SymbolWrapper* symbol) {
         if (symbol == nullptr) {
             throw std::runtime_error("Cannot find a stencil");
         }
@@ -25,9 +34,10 @@ namespace {
         const auto section = binary->get_text_section();
 
         // TODO: FIX FOR MACH-O
+        std::cout << symbol->name() << std::endl;
         const auto jump_instr_len = symbol->name() == "st_return" ? 0 : JUMP_INSTRUCTION_SIZE;
         const auto stencil_size = symbol->size() - jump_instr_len;
-        const auto stencil_offset = symbol->value();
+        const auto stencil_offset = symbol->offset();
 
         auto code = std::vector<uint8_t>(stencil_size);
         auto patches = std::vector<CnpStencilPatch>();
@@ -42,7 +52,7 @@ namespace {
 
         for (const LIEF::ELF::Relocation& relocation : relocations) {
             const auto address = relocation.address();
-            patch_addresses.push_back(address - symbol->value());
+            patch_addresses.emplace_back(address - symbol->offset(), 32);
         }
 
         return {symbol->name(), std::move(code), std::move(patches)};
@@ -64,7 +74,10 @@ namespace {
         throw std::runtime_error("Architecture __arm__ not yet supported");
 #elif defined(__aarch64__)
         // TODO !!
-        throw std::runtime_error("Architecture __aarch64__ not yet supported");
+        stencils[JUMP] = CnpStencil(
+            std::vector<uint8_t>({0x14, 0x00, 0x00, 0x00}),
+            std::vector<CnpPatchAddress>(1, {1, 26})
+        );
 #elif defined(__x86_64__)
         stencils[JUMP] = CnpStencil(
             "jump",
