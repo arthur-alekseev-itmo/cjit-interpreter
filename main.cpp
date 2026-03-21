@@ -2,7 +2,7 @@
 #include "ir/ir.hpp"
 #include <vector>
 
-#include "cnp/CnpInterpreter.h"
+#include "cnp/execution/CnpInterpreter.h"
 #include "cnp/stencil/CnpStencilFactory.h"
 
 int main(int argc, char** argv) {
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     const auto stencil_factory = CnpStencilFactory();
     const auto interpreter = CnpInterpreter(stencil_factory.create());
-    interpreter.execute(bc_print_10_factorial);
+    interpreter.execute(bc_loop);
 
     return 0;
 }

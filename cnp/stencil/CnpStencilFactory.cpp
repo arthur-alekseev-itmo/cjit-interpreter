@@ -12,7 +12,7 @@
 #define STENCIL_COUNT NUM_OPCODES
 #define CNP_VALUE_HOLE_NAME "cnp_value_hole"
 #define CNP_STENCIL_OUTPUT "cnp_func_hole"
-#define JUMP_INSTRUCTION_SIZE 5
+#define JUMP_INSTRUCTION_SIZE 6
 
 namespace
 {
@@ -29,7 +29,7 @@ namespace
         const auto stencil_offset = symbol->value();
 
         auto code = std::vector<uint8_t>(stencil_size);
-        auto patch_addresses = std::vector<std::size_t>();
+        auto patches = std::vector<CnpStencilPatch>();
 
         std::memcpy(
             code.data(),
@@ -39,7 +39,7 @@ namespace
 
         const auto relocations = binary->relocations();
 
-        for (const auto& relocation : relocations) {
+        for (const LIEF::ELF::Relocation& relocation : relocations) {
             const auto address = relocation.address();
 
             if (!relocation.has_section() || relocation.section()->name() != ".text") {
@@ -50,15 +50,15 @@ namespace
                 continue;
             }
 
-            // TODO: Function patch addresses in another struct field, 64, 32 and other sized symbols too
-            // if (relocation.symbol()->name().contains(CNP_VALUE_HOLE_NAME)) {
-            //     patch_addresses->push_back(address - symbol->value());
-            // }
-
-            patch_addresses.push_back(address - symbol->value());
+            const auto type = relocation.type();
+            const auto offset = address - symbol->value();
+            patches.emplace_back(
+                static_cast<LIEF::ELF::RELOC_x86_64>(type),
+                offset
+            );
         }
 
-        return {std::move(code), std::move(patch_addresses)};
+        return {symbol->name(), std::move(code), std::move(patches)};
     }
 
     int ensure_stencil_file(const std::string& sources, const std::string& output) {
@@ -66,7 +66,8 @@ namespace
             // TODO: Check modification dates like make (or use make)
             return 0;
         }
-        const std::string stencil_compile_cmd = "clang -O3 -fno-pic -c " + sources + " -o " + output;
+        const std::string flags = "-Os -fPIC -fno-plt -fno-stack-protector -fno-asynchronous-unwind-tables";
+        const std::string stencil_compile_cmd = "clang " + flags + " -c " + sources + " -o " + output;
         return exec_silent(stencil_compile_cmd.c_str());
     }
 
@@ -79,8 +80,10 @@ namespace
         throw std::runtime_error("Architecture __aarch64__ not yet supported");
 #elif defined(__x86_64__)
         stencils[JUMP] = CnpStencil(
+            "jump",
             std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
-            std::vector<size_t>({1})
+            // TODO: Super sketchy and hacky!
+            std::vector(1, CnpStencilPatch(LIEF::ELF::RELOC_x86_64::R_X86_64_32S, 1))
         );
 #else
         throw std::runtime_error("Unknown architecture");

@@ -54,7 +54,7 @@ static_assert(sizeof(&my_print) == 8);
 #define MY_PRINT_BYTES U64_TO_BYTES(my_print_addr)
 #define MY_DEBUG_VIEW_BYTES U64_TO_BYTES(my_debug_view_addr)
 
-#define SMALL_CONST(value) (uint8_t)value, 0x00, 0x00, 0x00
+#define SMALL_CONST(value) (uint8_t)value, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 
 inline uint8_t basic_math_example[] = {
     LOAD_IMM, SMALL_CONST(0x03),      // Load 3

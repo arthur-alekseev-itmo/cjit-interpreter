@@ -15,8 +15,8 @@ std::size_t opcode_size(const opcode oc) {
     case JUMP:
     case JUMP_TRUE:
     case READ_STACK:
-    case WRITE_STACK:
-    case LOAD_IMM: return 5;
+    case WRITE_STACK: return 5;
+    case LOAD_IMM:
     case CALL_C_V_STACK_PTR:
     case CALL_C_V_U64: return 9;
     default: assert(false);

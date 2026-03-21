@@ -60,8 +60,8 @@ add_executable(cjit_interpreter main.cpp
         utils/utils.hpp
         ir/ir.cpp
         ir/ir.hpp
-        cnp/CnpFunction.cpp
-        cnp/CnpFunction.h
+        cnp/execution/CnpFunction.cpp
+        cnp/execution/CnpFunction.h
         cnp/stencil/CnpStencil.cpp
         cnp/stencil/CnpStencil.h
         cnp/CnpSymbol.cpp
@@ -70,8 +70,12 @@ add_executable(cjit_interpreter main.cpp
         cnp/stencil/CnpStencilFactory.h
         cnp/stencil/CnpStencilCollection.cpp
         cnp/stencil/CnpStencilCollection.h
-        cnp/CnpInterpreter.cpp
-        cnp/CnpInterpreter.h
+        cnp/execution/CnpInterpreter.cpp
+        cnp/execution/CnpInterpreter.h
+        cnp/codegen/CnpCodegen.cpp
+        cnp/codegen/CnpCodegen.h
+        cnp/data_pool/CnpDataPool.cpp
+        cnp/data_pool/CnpDataPool.h
 
 )
 
