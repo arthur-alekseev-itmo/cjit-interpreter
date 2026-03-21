@@ -6,12 +6,14 @@ std::size_t opcode_size(const opcode oc) {
     switch (oc) {
     case NOP:
     case ADD:
+    case SUB:
     case EXIT:
     case DUP:
     case DROP:
     case RETURN:
     case EQ:
     case MUL: return 1;
+    case CALL:
     case JUMP:
     case JUMP_TRUE:
     case READ_STACK:

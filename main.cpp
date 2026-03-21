@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     const auto stencil_factory = CnpStencilFactory();
     const auto interpreter = CnpInterpreter(stencil_factory.create());
-    interpreter.execute(bc_loop);
+    interpreter.execute(bc_print_10_factorial);
 
     return 0;
 }

@@ -12,18 +12,20 @@ enum opcode {
     NOP = 0x0,
     LOAD_IMM = 0x1,
     ADD = 0x2,
-    MUL = 0x3,
-    EQ = 0x4,
-    CALL_C_V_U64 = 0x5,
-    CALL_C_V_STACK_PTR = 0x6,
-    EXIT = 0x7,
-    DUP = 0x8,
-    DROP = 0x9,
-    JUMP = 0xA,
-    JUMP_TRUE = 0xB,
-    RETURN = 0xC,
-    READ_STACK = 0xD,
-    WRITE_STACK = 0xE,
+    SUB = 0x3,
+    MUL = 0x4,
+    EQ = 0x5,
+    CALL_C_V_U64 = 0x6,
+    CALL_C_V_STACK_PTR = 0x7,
+    EXIT = 0x8,
+    DUP = 0x9,
+    DROP = 0xA,
+    JUMP = 0xB,
+    JUMP_TRUE = 0xC,
+    RETURN = 0xD,
+    READ_STACK = 0xE,
+    WRITE_STACK = 0xF,
+    CALL = 0x10,
 
     NUM_OPCODES
 };
@@ -54,41 +56,49 @@ static_assert(sizeof(&my_print) == 8);
 #define MY_PRINT_BYTES U64_TO_BYTES(my_print_addr)
 #define MY_DEBUG_VIEW_BYTES U64_TO_BYTES(my_debug_view_addr)
 
-#define SMALL_CONST(value) (uint8_t)value, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+#define CONST_64(value) (uint8_t)value, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+#define CONST_32(value) (uint8_t)value, 0x00, 0x00, 0x00
 
 inline uint8_t basic_math_example[] = {
-    LOAD_IMM, SMALL_CONST(0x03),      // Load 3
-    LOAD_IMM, SMALL_CONST(0x05),      // Load 5
+    LOAD_IMM, CONST_64(0x03),      // Load 3
+    LOAD_IMM, CONST_64(0x05),      // Load 5
     MUL,                              // Mul
-    LOAD_IMM, SMALL_CONST(0x07),      // Load 7
+    LOAD_IMM, CONST_64(0x07),      // Load 7
     ADD,                              // Add
     RETURN                            // Return
 };
 
 inline uint8_t infinite_loop_example[] = {
-    LOAD_IMM, SMALL_CONST(0x00),      // Load 0
-    LOAD_IMM, SMALL_CONST(0x01),      // Load 1
+    LOAD_IMM, CONST_64(0x00),      // Load 0
+    LOAD_IMM, CONST_64(0x01),      // Load 1
     ADD,                              // Add
     DUP,                              // Dup
     CALL_C_V_U64, MY_PRINT_BYTES,     // Print
-    JUMP, SMALL_CONST(0x01)           // Jump 0x01
+    JUMP, CONST_32(0x01)           // Jump 0x01
 };
 
 inline uint8_t print_42[] = {
-    LOAD_IMM, SMALL_CONST(42),        // Load 42
+    LOAD_IMM, CONST_64(42),        // Load 42
     CALL_C_V_U64, MY_PRINT_BYTES,     // Print
     RETURN                            // Return
 };
 
-
-// TODO: INSTRUCTION COMMENTS ARE WRONG HERE!!
 inline uint8_t print_10_factorial[] = {
-    LOAD_IMM, SMALL_CONST(10),        // [a]
-    LOAD_IMM, SMALL_CONST(1),         // [a, r]
-    LOAD_IMM, SMALL_CONST(1),         // [a, r, i]
-    JUMP_TRUE, SMALL_CONST(7),
-    READ_STACK, SMALL_CONST(1),
-    CALL_C_V_U64, MY_PRINT_BYTES,
-    CALL_C_V_U64, MY_PRINT_BYTES,
-    RETURN,
+    /* main */
+    /* 00 */ LOAD_IMM, CONST_64(0xa),
+    /* 01 */ CALL, CONST_32(0x4),
+    /* 02 */ CALL_C_V_U64, MY_PRINT_BYTES,
+    /* 03 */ RETURN,
+
+    /* factorial */
+    /* 04 */ DUP,
+    /* 05 */ LOAD_IMM, CONST_64(0x1),
+    /* 06 */ EQ,
+    /* 07 */ JUMP_TRUE, CONST_32(0xd),
+    /* 08 */ DUP,
+    /* 09 */ LOAD_IMM, CONST_64(0x1),
+    /* 0a */ SUB,
+    /* 0b */ CALL, CONST_32(0x4),
+    /* 0c */ MUL,
+    /* 0d */ RETURN
 };

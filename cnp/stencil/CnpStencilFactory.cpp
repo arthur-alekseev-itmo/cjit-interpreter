@@ -83,7 +83,7 @@ namespace
             "jump",
             std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
             // TODO: Super sketchy and hacky!
-            std::vector(1, CnpStencilPatch(LIEF::ELF::RELOC_x86_64::R_X86_64_32S, 1))
+            std::vector(1, CnpStencilPatch(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX, 1))
         );
 #else
         throw std::runtime_error("Unknown architecture");
@@ -99,6 +99,7 @@ namespace
         PARSE_STENCIL(NOP, "st_nop");
         PARSE_STENCIL(LOAD_IMM, "st_load_imm");
         PARSE_STENCIL(ADD, "st_add");
+        PARSE_STENCIL(SUB, "st_sub");
         PARSE_STENCIL(MUL, "st_mul");
         PARSE_STENCIL(CALL_C_V_U64, "st_call_c_u64");
         PARSE_STENCIL(CALL_C_V_STACK_PTR, "st_call_c_stack_ptr");
@@ -110,6 +111,7 @@ namespace
         PARSE_STENCIL(WRITE_STACK, "st_write_stack");
         PARSE_STENCIL(JUMP_TRUE, "st_jump_true");
         PARSE_STENCIL(EQ, "st_eq");
+        PARSE_STENCIL(CALL, "st_call");
 
         fill_jump_stencils(stencils);
 

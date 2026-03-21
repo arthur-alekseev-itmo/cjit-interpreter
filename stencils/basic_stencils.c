@@ -27,7 +27,7 @@ extern uintptr_t cnp_value_hole_2;
 typedef return_type(*stencil_fn)(__VA_ARGS__);
 
 #define DECLARE_STENCIL_OUTPUT(...) \
-typedef void(*stencil_output_fn)(__VA_ARGS__) STENCIL __attribute__((used)); \
+typedef void(*stencil_output_fn)(__VA_ARGS__) STENCIL; \
 stencil_output_fn stencil_output = (stencil_output_fn)&cnp_func_hole;
 
 #define STENCIL_END \
@@ -51,6 +51,13 @@ STENCIL void st_add(uint64_t *stack_top) {
     POP(left);
     POP(right);
     PUSH(left + right);
+    STENCIL_END
+}
+
+STENCIL void st_sub(uint64_t *stack_top) {
+    POP(left);
+    POP(right);
+    PUSH(right - left);
     STENCIL_END
 }
 
@@ -105,10 +112,17 @@ STENCIL void st_jump_true(uint64_t *stack_top) {
     return fn_else(stack_top);
 }
 
+// TODO: Unused and hardcoded =(
 STENCIL void st_jump(uint64_t *stack_top) {
     // 32 is used as the call is relative and will be compiled to relative jump
     void (* STENCIL jump)(uint64_t*) = STENCIL_HOLE_32_1(void (* STENCIL)(uint64_t*));
     return jump(stack_top);
+}
+
+STENCIL void st_call(uint64_t *stack_top) {
+    // 32 is used as the call is relative and will be compiled to relative jump
+    void (* STENCIL jump)(uint64_t*) = STENCIL_HOLE_32_1(void (* STENCIL)(uint64_t*));
+    jump(stack_top);
     STENCIL_END
 }
 

@@ -76,6 +76,8 @@ add_executable(cjit_interpreter main.cpp
         cnp/codegen/CnpCodegen.h
         cnp/data_pool/CnpDataPool.cpp
         cnp/data_pool/CnpDataPool.h
+        cnp/debug/CnpExecutionTrace.cpp
+        cnp/debug/CnpExecutionTrace.h
 
 )
 

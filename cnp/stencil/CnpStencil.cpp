@@ -2,9 +2,12 @@
 
 #include <cstring>
 
+
 std::size_t CnpStencil::size() const {
     return code.size();
 }
+
+enum PatchStrategy { INDIRECT, DIRECT };
 
 void CnpStencil::patch(
     uint8_t* function_pointer,
@@ -27,9 +30,20 @@ void CnpStencil::patch(
 
     for (const auto patch : patches) {
         const uint32_t relative_got_offset = (got_pointer + got_offset) - (function_pointer + function_offset + patch.address + sizeof(uint32_t));
+        PatchStrategy strategy;
         switch (patch.type) {
         case LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX:
         case LIEF::ELF::RELOC_x86_64::R_X86_64_REX_GOTPCRELX:
+            strategy = INDIRECT;
+            break;
+        case LIEF::ELF::RELOC_x86_64::R_X86_64_32S:
+            strategy = DIRECT;
+            break;
+        default: throw std::runtime_error("More cases need to be supported!!!");
+        }
+
+        switch (strategy) {
+        case INDIRECT:
             // We copy to Fake GOT, and put its relative address to instruction
             memcpy(
                 got_pointer + got_offset,
@@ -44,8 +58,7 @@ void CnpStencil::patch(
             got_offset += values_vector[current_value].size;
             current_value++;
             break;
-        // TODO: I am really unsure, now just hack for jump
-        case LIEF::ELF::RELOC_x86_64::R_X86_64_32S:
+        case DIRECT:
             memcpy(
                 function_pointer + function_offset + patch.address,
                 values_vector[current_value].address,
@@ -53,7 +66,6 @@ void CnpStencil::patch(
             );
             current_value++;
             break;
-        default: throw std::runtime_error("More cases need to be supported!!!");
         }
     }
 
