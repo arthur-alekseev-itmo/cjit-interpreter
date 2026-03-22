@@ -133,6 +133,14 @@ STENCIL void st_eq(uint64_t *stack_top) {
     STENCIL_END
 }
 
+STENCIL void st_swap(uint64_t *stack_top) {
+    POP(first);
+    POP(second);
+    PUSH(first);
+    PUSH(second);
+    STENCIL_END
+}
+
 STENCIL void st_read_stack(uint64_t *stack_top) {
     READ(value, STENCIL_HOLE_32_1(uint32_t));
     PUSH(value);

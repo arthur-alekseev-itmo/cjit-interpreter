@@ -52,12 +52,14 @@ namespace {
         const CnpStencilCollection* stencils,
         const std::vector<std::size_t>& jumps
     ) {
-        const auto op = bc_slice[ip];
+        const auto op = static_cast<opcode>(bc_slice[ip]);
         switch (op) {
         case NOP:
             ADVANCE(1);
         case READ_STACK:
         case WRITE_STACK:
+            COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint32_t, 1));
+            ADVANCE(5);
         case LOAD_IMM:
             COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint64_t, 1));
             ADVANCE(9);
@@ -70,6 +72,8 @@ namespace {
         case SUB:
         case EXIT:
         case DUP:
+        case DROP:
+        case SWAP:
         case EQ:
         case RETURN:
             COPY_AND_PATCH();

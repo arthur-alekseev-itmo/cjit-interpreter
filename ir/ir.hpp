@@ -26,6 +26,7 @@ enum opcode {
     READ_STACK = 0xE,
     WRITE_STACK = 0xF,
     CALL = 0x10,
+    SWAP = 0x11,
 
     NUM_OPCODES
 };
@@ -101,4 +102,42 @@ inline uint8_t print_10_factorial[] = {
     /* 0b */ CALL, CONST_32(0x4),
     /* 0c */ MUL,
     /* 0d */ RETURN
+};
+
+inline uint8_t print_10_fib[] = {
+    /* main */
+    /* 00 */ LOAD_IMM, CONST_64(20),
+    /* 01 */ CALL, CONST_32(0x4),
+
+    /* 02 */ CALL_C_V_U64, MY_PRINT_BYTES,
+    /* 03 */ RETURN,
+
+
+    /* fib */
+    /* 04 */ DUP,
+    /* 05 */ LOAD_IMM, CONST_64(0x1),
+    /* 06 */ EQ,
+    /* 07 */ JUMP_TRUE, CONST_32(0x16),
+
+    /* 08 */ DUP,
+    /* 09 */ LOAD_IMM, CONST_64(0x2),
+    /* 0a */ EQ,
+    /* 0b */ JUMP_TRUE, CONST_32(0x16),
+
+    /* 0c */ DUP,
+    /* 0d */ LOAD_IMM, CONST_64(0x1),
+    /* 0e */ SUB,
+    /* 0f */ CALL, CONST_32(0x4),
+
+    /* 10 */ SWAP,
+    /* 11 */ LOAD_IMM, CONST_64(0x2),
+    /* 12 */ SUB,
+    /* 13 */ CALL, CONST_32(0x4),
+
+    /* 14 */ ADD,
+    /* 15 */ RETURN,
+
+    /* 16 */ DROP,
+    /* 17 */ LOAD_IMM, CONST_64(0x1),
+    /* 18 */ RETURN,
 };

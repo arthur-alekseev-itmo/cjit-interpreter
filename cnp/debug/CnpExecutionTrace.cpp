@@ -11,6 +11,11 @@ CnpExecutionTrace::CnpExecutionTrace(uint64_t* base) : base_(base) {
 
 void trace(const uint64_t* stack) {
     const uint64_t* stack_ptr = stack;
+    if (stack_ptr - global_base_ > 32) {
+        std::cout << "STACK OVERFLOW" << std::endl;
+        // This exact line will not throw but just cause Segfault
+        throw std::runtime_error("STACK OVERFLOW");
+    }
     std::cout << global_current_instruction_idx_++ << "[";
     while (stack_ptr > global_base_) {
         std::cout << " " << *(--stack_ptr);
@@ -27,6 +32,9 @@ bytecode CnpExecutionTrace::instrument(bytecode& bc) {
     while (ip < bc.size()) {
         const auto op = static_cast<opcode>(bc[ip]);
         const auto step = opcode_size(op);
+        for (unsigned char trace_byte : debug_instruction) {
+            result.push_back(trace_byte);
+        }
         switch (op) {
         case JUMP:
         case JUMP_TRUE:
@@ -44,10 +52,6 @@ bytecode CnpExecutionTrace::instrument(bytecode& bc) {
             for (std::size_t j = 0; j < step; j++) {
                 result.push_back(bc[ip + j]);
             }
-        }
-
-        for (unsigned char trace_byte : debug_instruction) {
-            result.push_back(trace_byte);
         }
         ip += step;
     }

@@ -12,6 +12,7 @@ std::size_t opcode_size(const opcode oc) {
     case DROP:
     case RETURN:
     case EQ:
+    case SWAP:
     case MUL: return 1;
     case CALL:
     case JUMP:

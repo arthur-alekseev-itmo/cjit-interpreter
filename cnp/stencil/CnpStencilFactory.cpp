@@ -112,6 +112,7 @@ namespace
         PARSE_STENCIL(JUMP_TRUE, "st_jump_true");
         PARSE_STENCIL(EQ, "st_eq");
         PARSE_STENCIL(CALL, "st_call");
+        PARSE_STENCIL(SWAP, "st_swap");
 
         fill_jump_stencils(stencils);
 
