@@ -67,52 +67,28 @@ const LIEF::Section* MachOBinaryWrapper::get_text_section() const {
     return binary_->get_section(text_section_name_);
 }
 
-const std::vector<LIEF::Relocation> MachOBinaryWrapper::get_relocations_for_symbol(const SymbolWrapper* symbol) const {
-    auto result = std::vector<LIEF::Relocation>();
+#define JUMP_SIZE 4
+
+const std::vector<RelocationWrapper> MachOBinaryWrapper::get_relocations_for_symbol(const SymbolWrapper* symbol) const {
+    auto result = std::vector<RelocationWrapper>();
     const auto stencil_size = symbol->size();
 
     for (const LIEF::MachO::Relocation& relocation : binary_->relocations()) {
-        const auto address = relocation.address();
+        const auto address = relocation.address() - relocation.section()->offset();
         relocation.print(std::cout);
+        std::cout << std::endl;
         if (!relocation.has_section() || relocation.section()->name() != text_section_name_) {
             continue;
         }
-        if (address < symbol->offset() || address >= symbol->offset() + stencil_size) {
+        if (address < symbol->offset() || address >= symbol->offset() + stencil_size - JUMP_SIZE) {
             continue;
         }
-        result.push_back(relocation);
+        result.emplace_back(
+            relocation.address(),
+            relocation.type(),
+            static_cast<uint8_t>(relocation.architecture())
+        );
     }
 
     return result;
-}
-
-// TODO: Вставлено с нейронки, проверить бы спасло!!! (может спасет RelocationSizes.cpp)
-constexpr size_t get_reloc_size_bits(LIEF::MachO::ARM64_RELOCATION reloc) {
-    switch (reloc) {
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_UNSIGNED:
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_SUBTRACTOR:
-        return 64; // Может быть 32 в зависимости от поля r_length
-
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26:
-        return 26;
-
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGE21:
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGE21:
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_TLVP_LOAD_PAGE21:
-        return 21;
-
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGEOFF12:
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGEOFF12:
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_TLVP_LOAD_PAGEOFF12:
-        return 12;
-
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_ADDEND:
-        return 24;
-
-    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_POINTER_TO_GOT:
-        return 32;
-
-    default:
-        return 0;
-    }
 }

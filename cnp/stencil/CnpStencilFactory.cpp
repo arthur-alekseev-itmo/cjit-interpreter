@@ -9,6 +9,7 @@
 #include "../../utils/utils.hpp"
 #include "../parsing/BinaryWrapper.hpp"
 #include "../parsing/MachOBinaryWrapper.hpp"
+#include "../parsing/RelocationWrapper.h"
 
 
 #define STENCIL_COUNT NUM_OPCODES
@@ -50,9 +51,12 @@ namespace {
 
         const auto relocations = binary->get_relocations_for_symbol(symbol);
 
-        for (const LIEF::ELF::Relocation& relocation : relocations) {
-            const auto address = relocation.address();
-            patch_addresses.emplace_back(address - symbol->offset(), 32);
+        for (const RelocationWrapper& relocation : relocations) {
+            const auto address = relocation.address;
+            patches.emplace_back(
+                relocation.type,
+                address - symbol->offset()
+            );
         }
 
         return {symbol->name(), std::move(code), std::move(patches)};
@@ -75,15 +79,16 @@ namespace {
 #elif defined(__aarch64__)
         // TODO !!
         stencils[JUMP] = CnpStencil(
+            "jump",
             std::vector<uint8_t>({0x14, 0x00, 0x00, 0x00}),
-            std::vector<CnpPatchAddress>(1, {1, 26})
+            std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26), 0))
         );
 #elif defined(__x86_64__)
         stencils[JUMP] = CnpStencil(
             "jump",
             std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
             // TODO: Super sketchy and hacky!
-            std::vector(1, CnpStencilPatch(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX, 1))
+            std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX), 1))
         );
 #else
         throw std::runtime_error("Unknown architecture");

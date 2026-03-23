@@ -80,14 +80,16 @@ add_executable(cjit_interpreter main.cpp
         cnp/data_pool/CnpDataPool.h
         cnp/debug/CnpExecutionTrace.cpp
         cnp/debug/CnpExecutionTrace.h
-        cnp/CnpInterpreter.cpp
-        cnp/CnpInterpreter.h
         cnp/parsing/BinaryWrapper.cpp
         cnp/parsing/BinaryWrapper.hpp
         cnp/parsing/MachOBinaryWrapper.cpp
         cnp/parsing/MachOBinaryWrapper.hpp
         cnp/parsing/SymbolWrapper.cpp
         cnp/parsing/SymbolWrapper.h
+        cnp/parsing/RelocationWrapper.cpp
+        cnp/parsing/RelocationWrapper.h
+        cnp/parsing/ElfBinaryWrapper.cpp
+        cnp/parsing/ElfBinaryWrapper.h
 
 )
 

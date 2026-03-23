@@ -10,11 +10,11 @@
 #include "LIEF/MachO/enums.hpp"
 
 struct CnpStencilPatch {
-    LIEF::ELF::RELOC_x86_64 type; // TODO: It is stored as uint8_t in Relocation.cpp, maybe copy it
+    uint32_t type; // TODO: It is stored as uint8_t in Relocation.cpp, maybe copy it
     std::size_t address;
 
     CnpStencilPatch(
-        const LIEF::ELF::RELOC_x86_64 type,
+        const uint32_t type,
         const std::size_t address
     ) : type(type), address(address) {}
 };

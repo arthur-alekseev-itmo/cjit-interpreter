@@ -9,7 +9,7 @@
 #define COPY_AND_PATCH(...) (*stencils)[op].patch(function_ptr, function_offset, data_ptr, data_offset, {__VA_ARGS__})
 
 namespace {
-    std::size_t relocation_outer_size(const LIEF::ELF::RELOC_x86_64 type) {
+    std::size_t relocation_outer_size(uint32_t type) {
         // TODO: Take info from here if needed:
         // https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter7-2/index.html
         // TODO!!!!
@@ -82,17 +82,21 @@ namespace {
         case JUMP:
         case CALL:
             {
-                // Тяжело...
-                // TODO: Somehow understand if the address will be relative or absolute.
-                // Absolute for now
                 const auto jump_addr_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
                 const auto jump_addr = jumps[jump_addr_index];
                 const auto relative_jump = jump_addr - function_offset - JUMP_SIZE;
                 const auto relative_jump_patch_addr = reinterpret_cast<const uint8_t*>(&relative_jump);
                 const auto absolute_jump = function_ptr + jump_addr;
                 const auto absolute_jump_patch_addr = reinterpret_cast<const uint8_t*>(&absolute_jump);
+#if defined(__x86_64__)
                 COPY_AND_PATCH(CnpPatchValue(sizeof(int64_t), absolute_jump_patch_addr ));
                 ADVANCE(5);
+#elif defined(__aarch64__)
+                COPY_AND_PATCH(CnpPatchValue(sizeof(int32_t), relative_jump_patch_addr ));
+                ADVANCE(5);
+#else
+    throw std::runtime_error("Cannot determine strategy: unknown platform")
+#endif
             }
         default:
             // TODO:
