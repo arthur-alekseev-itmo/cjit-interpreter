@@ -106,7 +106,7 @@ inline uint8_t print_10_factorial[] = {
 
 inline uint8_t print_10_fib[] = {
     /* main */
-    /* 00 */ LOAD_IMM, CONST_64(40),
+    /* 00 */ LOAD_IMM, CONST_64(10),
     /* 01 */ CALL, CONST_32(0x4),
 
     /* 02 */ CALL_C_V_U64, MY_PRINT_BYTES,

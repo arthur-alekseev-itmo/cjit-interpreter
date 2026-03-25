@@ -10,13 +10,15 @@
 #include "LIEF/MachO/enums.hpp"
 
 struct CnpStencilPatch {
-    uint32_t type; // TODO: It is stored as uint8_t in Relocation.cpp, maybe copy it
+    uint32_t type;
     std::size_t address;
+    uint32_t architecture;
 
     CnpStencilPatch(
         const uint32_t type,
-        const std::size_t address
-    ) : type(type), address(address) {}
+        const std::size_t address,
+        const uint32_t architecture
+    ) : type(type), address(address), architecture(architecture) {}
 };
 
 struct CnpPatchValue {

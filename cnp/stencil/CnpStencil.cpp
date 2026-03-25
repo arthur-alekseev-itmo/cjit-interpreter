@@ -14,6 +14,7 @@ PatchStrategy determine_patch_strategy(uint32_t patch_type) {
     switch (static_cast<LIEF::ELF::RELOC_x86_64>(patch_type)) {
     case LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX:
     case LIEF::ELF::RELOC_x86_64::R_X86_64_REX_GOTPCRELX:
+    case LIEF::ELF::RELOC_x86_64::R_X86_64_PC32:
         return INDIRECT;
     case LIEF::ELF::RELOC_x86_64::R_X86_64_32S:
         return DIRECT;

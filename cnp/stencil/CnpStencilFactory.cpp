@@ -8,6 +8,7 @@
 #include "../../ir/ir.hpp"
 #include "../../utils/utils.hpp"
 #include "../parsing/BinaryWrapper.hpp"
+#include "../parsing/ElfBinaryWrapper.h"
 #include "../parsing/MachOBinaryWrapper.hpp"
 #include "../parsing/RelocationWrapper.h"
 
@@ -53,7 +54,8 @@ namespace {
             const auto address = relocation.address;
             patches.emplace_back(
                 relocation.type,
-                address - symbol->offset()
+                address - symbol->offset(),
+                relocation.architecture
             );
         }
 
@@ -70,34 +72,12 @@ namespace {
         return exec_silent(stencil_compile_cmd.c_str());
     }
 
-    // TODO: Remove: there is a way to generate stencils with jump
-    void fill_jump_stencils(std::vector<CnpStencil>& stencils) {
-// #if defined(__arm__)
-//         throw std::runtime_error("Architecture __arm__ not yet supported");
-// #elif defined(__aarch64__)
-//         stencils[JUMP] = CnpStencil(
-//             "jump",
-//             std::vector<uint8_t>({0x14, 0x00, 0x00, 0x00}),
-//             std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26), 0))
-//         );
-// #elif defined(__x86_64__)
-//         stencils[JUMP] = CnpStencil(
-//             "jump",
-//             std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
-//             // TODO: Super sketchy and hacky!
-//             std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX), 1))
-//         );
-// #else
-//         throw std::runtime_error("Unknown architecture");
-// #endif
-    }
-
     std::vector<CnpStencil> create_stencils(const std::string& stencil_obj) {
         auto stencils = std::vector<CnpStencil>(STENCIL_COUNT);
 #if defined(__aarch64__)
         const auto binary = std::make_unique<MachOBinaryWrapper>(stencil_obj);
 #elif defined(__x86_64__)
-        const auto binary = LIEF::ELF::Parser::parse(stencil_obj);
+        const auto binary = std::make_unique<ElfBinaryWrapper>(stencil_obj);
 #else
         throw std::runtime_error("Unknown architecture");
 #endif
@@ -124,8 +104,6 @@ namespace {
 
         PARSE_STENCIL_FULL(RETURN, "st_return");
         PARSE_STENCIL_FULL(JUMP, "st_jump");
-
-        fill_jump_stencils(stencils);
 
         return stencils;
     }

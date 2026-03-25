@@ -15,6 +15,13 @@
 
 
 namespace {
+    bool is_relative_jump(CnpStencilPatch patch) {
+        const auto t = patch.architecture;
+        if (t == 12 /* AARCH64 (TODO: Find the type, dont use magic numbers) */)
+            return patch.type == static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26);
+        return false;
+    }
+
     std::size_t relocation_outer_size(uint32_t type) {
         // TODO: Take info from here if needed:
         // https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter7-2/index.html
@@ -95,7 +102,7 @@ namespace {
                 const auto absolute_jump = function_ptr + jump_addr;
                 const auto absolute_jump_patch_addr = reinterpret_cast<const uint8_t*>(&absolute_jump);
 
-                if (stencils->operator[](op).patches[0].type == static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26)) {
+                if (is_relative_jump(stencils->operator[](op).patches[0])) {
                     // Relative
                     COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), relative_jump_patch_addr ));
                 } else {
