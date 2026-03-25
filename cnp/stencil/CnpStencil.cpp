@@ -22,8 +22,12 @@ PatchStrategy determine_patch_strategy(uint32_t patch_type) {
 #elif defined(__aarch64__)
     switch (static_cast<LIEF::MachO::ARM64_RELOCATION>(patch_type)) {
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGE21:
-        return INDIRECT_21;
+        return INDIRECT_21; // TODO: ну и дичь, тут походу 2 уровня косвенности
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGEOFF12:
+        return INDIRECT_12; // TODO: ну и дичь, тут походу 2 уровня косвенности
+    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGE21:
+        return INDIRECT_21;
+    case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGEOFF12:
         return INDIRECT_12;
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26:
         return DIRECT_26;
@@ -33,6 +37,21 @@ PatchStrategy determine_patch_strategy(uint32_t patch_type) {
     throw std::runtime_error("Cannot determine strategy: unknown platform")
 #endif
 
+}
+
+// I took this from CPython (https://github.com/python/cpython/blob/main/Python/jit.c)
+static uint32_t get_bits(uint64_t value, uint8_t value_start, uint8_t width) {
+    return (value >> value_start) & ((1ULL << width) - 1);
+}
+
+// I took this from CPython (https://github.com/python/cpython/blob/main/Python/jit.c)
+static void set_bits(uint32_t *loc, uint8_t loc_start, uint64_t value, uint8_t value_start, uint8_t width) {
+    uint32_t temp_val;
+    memcpy(&temp_val, loc, sizeof(temp_val));
+    temp_val &= ~(((1ULL << width) - 1) << loc_start);
+    const uint32_t patch = get_bits(value, value_start, width) << loc_start;
+    temp_val |= patch;
+    memcpy(loc, &temp_val, sizeof(temp_val));
 }
 
 void CnpStencil::patch(
@@ -55,26 +74,27 @@ void CnpStencil::patch(
     const auto values_vector = std::vector(values.begin(), values.end());
 
     for (const auto patch : patches) {
-        const uint32_t relative_got_offset = (got_pointer + got_offset) - (function_pointer + function_offset + patch.address + sizeof(uint32_t));
-
         const auto strategy = determine_patch_strategy(patch.type);
 
         switch (strategy) {
         case INDIRECT:
-            // We copy to Fake GOT, and put its relative address to instruction
-            memcpy(
-                got_pointer + got_offset,
-                values_vector[current_value].address,
-                values_vector[current_value].size
-            );
-            memcpy(
-                function_pointer + function_offset + patch.address,
-                &relative_got_offset,
-                sizeof(uint32_t)
-            );
-            got_offset += values_vector[current_value].size;
-            current_value++;
-            break;
+            {
+                const uint64_t relative_got_offset = (got_pointer + got_offset) - (function_pointer + function_offset + patch.address + sizeof(uint32_t));
+                // We copy to Fake GOT, and put its relative address to instruction
+                memcpy(
+                    got_pointer + got_offset,
+                    values_vector[current_value].address,
+                    values_vector[current_value].size
+                );
+                memcpy(
+                    function_pointer + function_offset + patch.address,
+                    &relative_got_offset,
+                    sizeof(uint32_t)
+                );
+                got_offset += values_vector[current_value].size;
+                current_value++;
+                break;
+            }
         case DIRECT:
             memcpy(
                 function_pointer + function_offset + patch.address,
@@ -85,33 +105,35 @@ void CnpStencil::patch(
             break;
         case INDIRECT_21:
             {
+                const auto got_page = reinterpret_cast<uint64_t>(got_pointer + got_offset) & ~0xFFF;
+                const auto ip_page = reinterpret_cast<uint64_t>(function_pointer + function_offset + patch.address + sizeof(uint32_t)) & ~0xFFF;
+                const auto relative_got_page = got_page - ip_page;
                 memcpy(
                     got_pointer + got_offset,
                     values_vector[current_value].address,
                     values_vector[current_value].size
                 );
                 auto* location = reinterpret_cast<uint32_t*>(function_pointer + function_offset + patch.address);
-                const auto patch_value = relative_got_offset;
-                const auto adjusted = (patch_value >> 11) & 0x1FFFFF; // top 21 bits
-                *location = *location | adjusted;
-                got_offset += values_vector[current_value].size;
+                set_bits(location, 29, relative_got_page, 0, 2);
+                set_bits(location, 5, relative_got_page, 2, 19);
                 break;
             }
         case INDIRECT_12:
             {
                 auto* location = reinterpret_cast<uint32_t*>(function_pointer + function_offset + patch.address);
-                const auto patch_value = relative_got_offset;
-                const auto adjusted = patch_value & 0xFFF; // bottom 12 bits
-                *location = *location | adjusted;
+                const auto absolute_got_offset = reinterpret_cast<uint64_t>(got_pointer + got_offset);
+                const auto got_page_offset = (absolute_got_offset & 0xFFF) >> 3;
+                set_bits(location, 10, got_page_offset, 0, 12);
+                got_offset += values_vector[current_value].size;
                 current_value++;
                 break;
             }
         case DIRECT_26:
             {
-                auto* location = reinterpret_cast<uint32_t*>(function_pointer + function_offset + patch.address);
+                auto location_ptr = function_pointer + function_offset + patch.address;
+                const auto location = reinterpret_cast<uint32_t*>(location_ptr);
                 const auto patch_value = *reinterpret_cast<const uint32_t*>(values_vector[current_value].address);
-                const auto adjusted = patch_value & 0x3FFFFFF; // bottom 26 bits
-                *location = *location | adjusted;
+                set_bits(location, 0, patch_value, 2, 26);
                 current_value++;
                 break;
             }

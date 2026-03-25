@@ -27,16 +27,14 @@ throw std::runtime_error("Unknown architecture");
 #endif
 
 namespace {
-    CnpStencil parse_stencil(const BinaryWrapper* binary, const SymbolWrapper* symbol) {
+    CnpStencil parse_stencil(const BinaryWrapper* binary, const SymbolWrapper* symbol, const bool cut_jump) {
         if (symbol == nullptr) {
             throw std::runtime_error("Cannot find a stencil");
         }
 
         const auto section = binary->get_text_section();
 
-        // TODO: FIX FOR MACH-O
-        std::cout << symbol->name() << std::endl;
-        const auto jump_instr_len = symbol->name() == "st_return" ? 0 : JUMP_INSTRUCTION_SIZE;
+        const auto jump_instr_len = cut_jump ? JUMP_INSTRUCTION_SIZE : 0;
         const auto stencil_size = symbol->size() - jump_instr_len;
         const auto stencil_offset = symbol->offset();
 
@@ -49,7 +47,7 @@ namespace {
             stencil_size
         );
 
-        const auto relocations = binary->get_relocations_for_symbol(symbol);
+        const auto relocations = binary->get_relocations_for_symbol(symbol, cut_jump);
 
         for (const RelocationWrapper& relocation : relocations) {
             const auto address = relocation.address;
@@ -74,25 +72,24 @@ namespace {
 
     // TODO: Remove: there is a way to generate stencils with jump
     void fill_jump_stencils(std::vector<CnpStencil>& stencils) {
-#if defined(__arm__)
-        throw std::runtime_error("Architecture __arm__ not yet supported");
-#elif defined(__aarch64__)
-        // TODO !!
-        stencils[JUMP] = CnpStencil(
-            "jump",
-            std::vector<uint8_t>({0x14, 0x00, 0x00, 0x00}),
-            std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26), 0))
-        );
-#elif defined(__x86_64__)
-        stencils[JUMP] = CnpStencil(
-            "jump",
-            std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
-            // TODO: Super sketchy and hacky!
-            std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX), 1))
-        );
-#else
-        throw std::runtime_error("Unknown architecture");
-#endif
+// #if defined(__arm__)
+//         throw std::runtime_error("Architecture __arm__ not yet supported");
+// #elif defined(__aarch64__)
+//         stencils[JUMP] = CnpStencil(
+//             "jump",
+//             std::vector<uint8_t>({0x14, 0x00, 0x00, 0x00}),
+//             std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26), 0))
+//         );
+// #elif defined(__x86_64__)
+//         stencils[JUMP] = CnpStencil(
+//             "jump",
+//             std::vector<uint8_t>({0xe9, 0x00, 0x00, 0x00, 0x00}),
+//             // TODO: Super sketchy and hacky!
+//             std::vector(1, CnpStencilPatch(static_cast<uint32_t>(LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX), 1))
+//         );
+// #else
+//         throw std::runtime_error("Unknown architecture");
+// #endif
     }
 
     std::vector<CnpStencil> create_stencils(const std::string& stencil_obj) {
@@ -105,7 +102,8 @@ namespace {
         throw std::runtime_error("Unknown architecture");
 #endif
 
-        #define PARSE_STENCIL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name));
+        #define PARSE_STENCIL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name), true);
+        #define PARSE_STENCIL_FULL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name), false);
 
         PARSE_STENCIL(NOP, "st_nop");
         PARSE_STENCIL(LOAD_IMM, "st_load_imm");
@@ -117,13 +115,15 @@ namespace {
         PARSE_STENCIL(EXIT, "st_exit");
         PARSE_STENCIL(DUP, "st_dup");
         PARSE_STENCIL(DROP, "st_drop");
-        PARSE_STENCIL(RETURN, "st_return");
         PARSE_STENCIL(READ_STACK, "st_read_stack");
         PARSE_STENCIL(WRITE_STACK, "st_write_stack");
         PARSE_STENCIL(JUMP_TRUE, "st_jump_true");
         PARSE_STENCIL(EQ, "st_eq");
         PARSE_STENCIL(CALL, "st_call");
         PARSE_STENCIL(SWAP, "st_swap");
+
+        PARSE_STENCIL_FULL(RETURN, "st_return");
+        PARSE_STENCIL_FULL(JUMP, "st_jump");
 
         fill_jump_stencils(stencils);
 

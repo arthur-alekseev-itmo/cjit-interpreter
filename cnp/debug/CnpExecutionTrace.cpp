@@ -11,7 +11,7 @@ CnpExecutionTrace::CnpExecutionTrace(uint64_t* base) : base_(base) {
 
 void trace(const uint64_t* stack) {
     const uint64_t* stack_ptr = stack;
-    if (stack_ptr - global_base_ > 32) {
+    if (stack_ptr - global_base_ > 1024) {
         std::cout << "STACK OVERFLOW" << std::endl;
         // This exact line will not throw but just cause Segfault
         throw std::runtime_error("STACK OVERFLOW");

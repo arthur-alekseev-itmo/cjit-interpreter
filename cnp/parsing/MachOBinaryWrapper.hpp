@@ -8,7 +8,7 @@ public:
 
     [[nodiscard]] const SymbolWrapper* get_symbol(const std::string& name) const override;
     [[nodiscard]] const LIEF::Section* get_text_section() const override;
-    const std::vector<RelocationWrapper> get_relocations_for_symbol(const SymbolWrapper* symbol) const override;
+    std::vector<RelocationWrapper> get_relocations_for_symbol(const SymbolWrapper* symbol, bool cut_jump) const override;
 
 private:
     std::unordered_map<std::string, SymbolWrapper> symbols_;

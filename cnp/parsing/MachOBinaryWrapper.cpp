@@ -69,22 +69,24 @@ const LIEF::Section* MachOBinaryWrapper::get_text_section() const {
 
 #define JUMP_SIZE 4
 
-const std::vector<RelocationWrapper> MachOBinaryWrapper::get_relocations_for_symbol(const SymbolWrapper* symbol) const {
+std::vector<RelocationWrapper> MachOBinaryWrapper::get_relocations_for_symbol(
+    const SymbolWrapper* symbol,
+    bool cut_jump
+) const {
     auto result = std::vector<RelocationWrapper>();
     const auto stencil_size = symbol->size();
-
+    const auto jump_size = cut_jump ? JUMP_SIZE : 0;
     for (const LIEF::MachO::Relocation& relocation : binary_->relocations()) {
         const auto address = relocation.address() - relocation.section()->offset();
-        relocation.print(std::cout);
-        std::cout << std::endl;
+
         if (!relocation.has_section() || relocation.section()->name() != text_section_name_) {
             continue;
         }
-        if (address < symbol->offset() || address >= symbol->offset() + stencil_size - JUMP_SIZE) {
+        if (address < symbol->offset() || address >= symbol->offset() + stencil_size - jump_size) {
             continue;
         }
         result.emplace_back(
-            relocation.address(),
+            address,
             relocation.type(),
             static_cast<uint8_t>(relocation.architecture())
         );

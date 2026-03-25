@@ -4,7 +4,7 @@
 #include "../codegen/CnpCodegen.h"
 #include "../debug/CnpExecutionTrace.h"
 
-#define INSTRUMENT_DEBUG
+// #define INSTRUMENT_DEBUG
 
 void CnpInterpreter::execute(bytecode& bytecode) const {
     std::uint64_t stack[0x10] = {};
@@ -19,5 +19,4 @@ void CnpInterpreter::execute(bytecode& bytecode) const {
     std::uint64_t* stack_top = stack;
     std::cout << fn;
     fn.call(stack_top);
-    std::cout << *stack_top;
 }
