@@ -5,12 +5,12 @@
 #include <fstream>
 #include <LIEF/LIEF.hpp>
 
-#include "../../ir/ir.hpp"
 #include "../../utils/utils.hpp"
 #include "../parsing/BinaryWrapper.hpp"
 #include "../parsing/ElfBinaryWrapper.h"
 #include "../parsing/MachOBinaryWrapper.hpp"
 #include "../parsing/RelocationWrapper.h"
+#include "../../bytecode/Opcode.h"
 
 
 #define STENCIL_COUNT NUM_OPCODES
@@ -73,7 +73,7 @@ namespace {
     }
 
     std::vector<CnpStencil> create_stencils(const std::string& stencil_obj) {
-        auto stencils = std::vector<CnpStencil>(STENCIL_COUNT);
+        auto stencils = std::vector<CnpStencil>(OpcodeUtils::opcode_count());
 #if defined(__aarch64__)
         const auto binary = std::make_unique<MachOBinaryWrapper>(stencil_obj);
 #elif defined(__x86_64__)
@@ -82,28 +82,29 @@ namespace {
         throw std::runtime_error("Unknown architecture");
 #endif
 
-        #define PARSE_STENCIL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name), true);
-        #define PARSE_STENCIL_FULL(opcode, name) stencils[opcode] = parse_stencil(binary.get(), binary->get_symbol(name), false);
+        #define PARSE_STENCIL(opcode, name) stencils[static_cast<std::size_t>(opcode)] = parse_stencil(binary.get(), binary->get_symbol(name), true);
+        #define PARSE_STENCIL_FULL(opcode, name) stencils[static_cast<std::size_t>(opcode)] = parse_stencil(binary.get(), binary->get_symbol(name), false);
 
-        PARSE_STENCIL(NOP, "st_nop");
-        PARSE_STENCIL(LOAD_IMM, "st_load_imm");
-        PARSE_STENCIL(ADD, "st_add");
-        PARSE_STENCIL(SUB, "st_sub");
-        PARSE_STENCIL(MUL, "st_mul");
-        PARSE_STENCIL(CALL_C_V_U64, "st_call_c_u64");
-        PARSE_STENCIL(CALL_C_V_STACK_PTR, "st_call_c_stack_ptr");
-        PARSE_STENCIL(EXIT, "st_exit");
-        PARSE_STENCIL(DUP, "st_dup");
-        PARSE_STENCIL(DROP, "st_drop");
-        PARSE_STENCIL(READ_STACK, "st_read_stack");
-        PARSE_STENCIL(WRITE_STACK, "st_write_stack");
-        PARSE_STENCIL(JUMP_TRUE, "st_jump_true");
-        PARSE_STENCIL(EQ, "st_eq");
-        PARSE_STENCIL(CALL, "st_call");
-        PARSE_STENCIL(SWAP, "st_swap");
+        PARSE_STENCIL(Opcode::NOP, "st_nop");
+        PARSE_STENCIL(Opcode::LOAD_IMM, "st_load_imm");
+        PARSE_STENCIL(Opcode::ADD, "st_add");
+        PARSE_STENCIL(Opcode::SUB, "st_sub");
+        PARSE_STENCIL(Opcode::MUL, "st_mul");
+        PARSE_STENCIL(Opcode::CALL_C_V_U64, "st_call_c_u64");
+        PARSE_STENCIL(Opcode::CALL_C_V_STACK_PTR, "st_call_c_stack_ptr");
+        PARSE_STENCIL(Opcode::EXIT, "st_exit");
+        PARSE_STENCIL(Opcode::DUP, "st_dup");
+        PARSE_STENCIL(Opcode::DROP, "st_drop");
+        PARSE_STENCIL(Opcode::READ_STACK, "st_read_stack");
+        PARSE_STENCIL(Opcode::WRITE_STACK, "st_write_stack");
+        PARSE_STENCIL(Opcode::JUMP_TRUE, "st_jump_true");
+        PARSE_STENCIL(Opcode::EQ, "st_eq");
+        PARSE_STENCIL(Opcode::CALL, "st_call");
+        PARSE_STENCIL(Opcode::SWAP, "st_swap");
+        PARSE_STENCIL(Opcode::CALL_BUILTIN, "st_call_builtin");
 
-        PARSE_STENCIL_FULL(RETURN, "st_return");
-        PARSE_STENCIL_FULL(JUMP, "st_jump");
+        PARSE_STENCIL_FULL(Opcode::RETURN, "st_return");
+        PARSE_STENCIL_FULL(Opcode::JUMP, "st_jump");
 
         return stencils;
     }

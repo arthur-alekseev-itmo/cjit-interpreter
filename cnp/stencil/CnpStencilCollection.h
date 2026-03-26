@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "CnpStencil.h"
-#include "../../ir/ir.hpp"
 
 class CnpStencilCollection {
 public:

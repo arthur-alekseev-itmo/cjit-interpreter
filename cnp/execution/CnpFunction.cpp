@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iomanip>
+#include <iostream>
 #include <sys/mman.h>
 
 #define ADVANCE(size) ip += size; break
@@ -50,14 +51,13 @@ std::uint64_t* CnpFunction::call(std::uint64_t* stack_top) const {
 CnpFunction::CnpFunction(
     const std::size_t data_size,
     const std::size_t instructions_size
-) : data_pool_(/* Initialized in the body */) {
+) {
     const auto [
         data_pool_ptr,
         function_ptr,
         total_size
     ] = allocate_jit_function(data_size, instructions_size);
 
-    this->data_pool_ = CnpDataPool(data_pool_ptr, data_size);
     this->memory_begin_ = data_pool_ptr;
     this->function_ptr_ = function_ptr;
 
@@ -86,15 +86,19 @@ uint8_t* CnpFunction::function_ptr() const {
 
 std::ostream& operator<<(std::ostream& os, const CnpFunction& fn) {
     std::cout << std::hex << std::setfill('0');
+
+    std::cout << std::endl << "code: ";
     for (std::size_t i = 0; i < fn.function_size_; i++) {
         const auto byte = reinterpret_cast<uint8_t*>(fn.function_ptr_)[i];
         std::cout << std::setw(2) << static_cast<unsigned int>(byte) << " ";
     }
-    std::cout << std::endl << "data:";
+
+    std::cout << std::endl << "data: ";
     for (std::size_t i = 0; i < fn.memory_size_ - fn.function_size_; i++) {
         const auto byte = reinterpret_cast<uint8_t*>(fn.memory_begin_)[i];
         std::cout << std::setw(2) << static_cast<unsigned int>(byte) << " ";
     }
+
     std::cout << std::dec << std::endl; // Reset to decimal for subsequent prints
     return os;
 }

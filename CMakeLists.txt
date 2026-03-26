@@ -60,8 +60,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(cjit_interpreter main.cpp
         utils/utils.cpp
         utils/utils.hpp
-        ir/ir.cpp
-        ir/ir.hpp
         cnp/execution/CnpFunction.cpp
         cnp/execution/CnpFunction.h
         cnp/stencil/CnpStencil.cpp
@@ -76,8 +74,6 @@ add_executable(cjit_interpreter main.cpp
         cnp/execution/CnpInterpreter.h
         cnp/codegen/CnpCodegen.cpp
         cnp/codegen/CnpCodegen.h
-        cnp/data_pool/CnpDataPool.cpp
-        cnp/data_pool/CnpDataPool.h
         cnp/debug/CnpExecutionTrace.cpp
         cnp/debug/CnpExecutionTrace.h
         cnp/parsing/BinaryWrapper.cpp
@@ -90,6 +86,18 @@ add_executable(cjit_interpreter main.cpp
         cnp/parsing/RelocationWrapper.h
         cnp/parsing/ElfBinaryWrapper.cpp
         cnp/parsing/ElfBinaryWrapper.h
+        bytecode/Bytecode.cpp
+        bytecode/Bytecode.h
+        bytecode/Instruction.cpp
+        bytecode/Instruction.h
+        bytecode/Opcode.cpp
+        bytecode/Opcode.h
+        builtins/Builtins.cpp
+        builtins/Builtins.h
+        bytecode/io/BytecodeReader.cpp
+        bytecode/io/BytecodeReader.h
+        bytecode/examples/BytecodeExamples.cpp
+        bytecode/examples/BytecodeExamples.h
 
 )
 

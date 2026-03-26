@@ -2,8 +2,6 @@
 #include <cstddef>
 #include <memory>
 
-#include "../../ir/ir.hpp"
-#include "../data_pool/CnpDataPool.h"
 #include "../stencil/CnpStencilCollection.h"
 
 typedef uint64_t*(*cnp_function_ptr)(uint64_t*) __attribute__((preserve_none));
@@ -20,7 +18,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const CnpFunction& fn);
 
 private:
-    CnpDataPool data_pool_;
     std::uint8_t* memory_begin_;
     cnp_function_ptr function_ptr_;
 

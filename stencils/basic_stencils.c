@@ -156,3 +156,11 @@ STENCIL void st_write_stack(uint64_t *stack_top) {
     WRITE(value, STENCIL_HOLE_32_1(uint32_t));
     STENCIL_END
 }
+
+STENCIL void st_call_builtin(uint64_t *stack_top) {
+    // Builtins are functions that take args from stack themselves, no need to check arity
+    // Resolved in codegen, address of builtin is placed in data section, then this address is set to this hole
+    void (* builtin)(uint64_t*) = STENCIL_HOLE_64_1(void (*)(uint64_t*));
+    builtin(stack_top);
+    STENCIL_END
+}

@@ -2,10 +2,13 @@
 
 #include <cassert>
 
-#define ADVANCE(size) ip += size; break
+#include "../../builtins/Builtins.h"
+#include "../../bytecode/Opcode.h"
+
+#define ADVANCE ip += (OpcodeUtils::size(op)); break
 #define EXTRACT_ARGUMENT_VALUE(type, offset) (&bc_slice[ip + (offset)])
 #define EXTRACT_ARGUMENT_PTR(type, offset) CnpPatchValue(sizeof(type), reinterpret_cast<const uint8_t*>(&bc_slice[ip + (offset)]))
-#define COPY_AND_PATCH(...) (*stencils)[op].patch(function_ptr, function_offset, data_ptr, data_offset, {__VA_ARGS__})
+#define COPY_AND_PATCH(...) (*stencils)[static_cast<std::size_t>(op)].patch(function_ptr, function_offset, data_ptr, data_offset, {__VA_ARGS__})
 
 #if defined(__aarch64__)
     #define JUMP_SIZE 0
@@ -35,7 +38,7 @@ namespace {
         std::vector<std::size_t> instruction_starts;
     };
 
-    function_layout calculate_layout(bytecode& bc, CnpStencilCollection* stencils) {
+    function_layout calculate_layout(const Bytecode& bc, CnpStencilCollection* stencils) {
         std::size_t instruction_size = 0;
         std::size_t data_section_size = 0;
         std::size_t ip = 0;
@@ -43,20 +46,20 @@ namespace {
 
         const std::size_t bc_size = bc.size();
         while (ip < bc_size) {
-            const auto op = static_cast<opcode>(bc[ip]);
-            const auto& stencil = (*stencils)[op];
+            const auto op = static_cast<Opcode>(bc.data()[ip]);
+            const auto& stencil = (*stencils)[static_cast<std::size_t>(op)];
             for (const auto patch : stencil.patches) {
                 data_section_size += relocation_outer_size(patch.type);
             }
             instruction_starts.push_back(instruction_size);
             instruction_size += stencil.size();
-            ip += opcode_size(op);
+            ip += OpcodeUtils::size(op);
         }
         return {data_section_size, instruction_size, instruction_starts};
     }
 
     void apply_bytecode_instruction(
-        const bytecode_ptr bc_slice,
+        const uint8_t* bc_slice,
         std::size_t& ip,
         uint8_t* function_ptr,
         std::size_t& function_offset,
@@ -65,35 +68,34 @@ namespace {
         const CnpStencilCollection* stencils,
         const std::vector<std::size_t>& jumps
     ) {
-        const auto op = static_cast<opcode>(bc_slice[ip]);
+        const auto op = static_cast<Opcode>(bc_slice[ip]);
         switch (op) {
-        case NOP:
-            ADVANCE(1);
-        case READ_STACK:
-        case WRITE_STACK:
+        case Opcode::NOP: ADVANCE;
+        case Opcode::READ_STACK:
+        case Opcode::WRITE_STACK:
             COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint32_t, 1));
-            ADVANCE(5);
-        case LOAD_IMM:
+            ADVANCE;
+        case Opcode::LOAD_IMM:
             COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint64_t, 1));
-            ADVANCE(9);
-        case CALL_C_V_STACK_PTR:
-        case CALL_C_V_U64:
+            ADVANCE;
+        case Opcode::CALL_C_V_STACK_PTR:
+        case Opcode::CALL_C_V_U64:
             COPY_AND_PATCH(CnpPatchValue(sizeof(intptr_t), EXTRACT_ARGUMENT_VALUE(intptr_t, 1)));
-            ADVANCE(9);
-        case MUL:
-        case ADD:
-        case SUB:
-        case EXIT:
-        case DUP:
-        case DROP:
-        case SWAP:
-        case EQ:
-        case RETURN:
+            ADVANCE;
+        case Opcode::MUL:
+        case Opcode::ADD:
+        case Opcode::SUB:
+        case Opcode::EXIT:
+        case Opcode::DUP:
+        case Opcode::DROP:
+        case Opcode::SWAP:
+        case Opcode::EQ:
+        case Opcode::RETURN:
             COPY_AND_PATCH();
-            ADVANCE(1);
-        case JUMP_TRUE:
-        case JUMP:
-        case CALL:
+            ADVANCE;
+        case Opcode::JUMP_TRUE:
+        case Opcode::JUMP:
+        case Opcode::CALL:
             {
                 const auto jump_addr_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
                 const auto jump_addr = jumps[jump_addr_index];
@@ -102,14 +104,22 @@ namespace {
                 const auto absolute_jump = function_ptr + jump_addr;
                 const auto absolute_jump_patch_addr = reinterpret_cast<const uint8_t*>(&absolute_jump);
 
-                if (is_relative_jump(stencils->operator[](op).patches[0])) {
+                if (is_relative_jump(stencils->operator[](static_cast<std::size_t>(op)).patches[0])) {
                     // Relative
                     COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), relative_jump_patch_addr ));
                 } else {
                     // Absolute
                     COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), absolute_jump_patch_addr ));
                 }
-                ADVANCE(5);
+                ADVANCE;
+            }
+        case Opcode::CALL_BUILTIN:
+            {
+                const auto builtin_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
+                assert(builtin_index < std::size(builtin_addresses));
+                const auto fn_address = builtin_addresses[builtin_index];
+                COPY_AND_PATCH(CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address)));
+                ADVANCE;
             }
         default:
             // TODO:
@@ -121,7 +131,7 @@ namespace {
         uint8_t* code_ptr,
         uint8_t* data_ptr,
         const CnpStencilCollection* stencils,
-        const bytecode& bc,
+        const Bytecode& bc,
         const std::vector<std::size_t>& instruction_starts
     ) {
         std::size_t function_offset = 0;
@@ -142,7 +152,7 @@ namespace {
     }
 }
 
-CnpFunction CnpCodegen::compile(bytecode& bc, CnpStencilCollection* stencils)
+CnpFunction CnpCodegen::compile(const Bytecode& bc, CnpStencilCollection* stencils)
 {
     const auto [
         data_section_size,
