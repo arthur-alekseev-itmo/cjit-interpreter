@@ -1,0 +1,43 @@
+#define ARGS_NONE 1
+#define ARGS_UI64 9
+#define ARGS_UI32 5
+
+#define TRIM_END false
+#define WITH_END true
+
+// Format:
+//        Opcode             Name                 Size           Stencil                  Cut last jump
+DEF_INSTR(NOP,               "NOP",               ARGS_NONE,     "st_nop",                TRIM_END)
+DEF_INSTR(LOAD_IMM,          "LOAD_IMM",          ARGS_UI64,     "st_load_imm",           TRIM_END)
+DEF_INSTR(ADD,               "ADD",               ARGS_NONE,     "st_add",                TRIM_END)
+DEF_INSTR(SUB,               "SUB",               ARGS_NONE,     "st_sub",                TRIM_END)
+DEF_INSTR(MUL,               "MUL",               ARGS_NONE,     "st_mul",                TRIM_END)
+DEF_INSTR(DIV,               "DIV",               ARGS_NONE,     "st_div",                TRIM_END)
+DEF_INSTR(EQ,                "EQ",                ARGS_NONE,     "st_eq",                 TRIM_END)
+DEF_INSTR(NEQ,               "NEQ",               ARGS_NONE,     "st_neq",                TRIM_END)
+DEF_INSTR(LE,                "LE",                ARGS_NONE,     "st_le",                 TRIM_END)
+DEF_INSTR(GE,                "GE",                ARGS_NONE,     "st_ge",                 TRIM_END)
+DEF_INSTR(LT,                "LT",                ARGS_NONE,     "st_lt",                 TRIM_END)
+DEF_INSTR(GT,                "GT",                ARGS_NONE,     "st_gt",                 TRIM_END)
+DEF_INSTR(CALL_C_V_U64,      "CALL_C_V_U64",      ARGS_UI64,     "st_call_c_v_u64",       TRIM_END)
+DEF_INSTR(CALL_C_V_STACK_PTR,"CALL_C_V_STACK_PTR",ARGS_UI64,     "st_call_c_v_stack_ptr", TRIM_END)
+DEF_INSTR(EXIT,              "EXIT",              ARGS_NONE,     "st_exit",               TRIM_END)
+DEF_INSTR(DUP,               "DUP",               ARGS_NONE,     "st_dup",                TRIM_END)
+DEF_INSTR(DROP,              "DROP",              ARGS_NONE,     "st_drop",               TRIM_END)
+DEF_INSTR(JUMP,              "JUMP",              ARGS_UI32,     "st_jump",               WITH_END)
+DEF_INSTR(JUMP_TRUE,         "JUMP_TRUE",         ARGS_UI32,     "st_jump_true",          TRIM_END)
+DEF_INSTR(JUMP_FALSE,        "JUMP_FALSE",        ARGS_UI32,     "st_jump_false",         TRIM_END)
+DEF_INSTR(RETURN,            "RETURN",            ARGS_NONE,     "st_return",             WITH_END)
+DEF_INSTR(READ_STACK,        "READ_STACK",        ARGS_UI32,     "st_read_stack",         TRIM_END)
+DEF_INSTR(WRITE_STACK,       "WRITE_STACK",       ARGS_UI32,     "st_write_stack",        TRIM_END)
+DEF_INSTR(LOAD_LOCAL,        "LOAD_LOCAL",        ARGS_UI32,     "st_load_local",         TRIM_END)
+DEF_INSTR(STORE_LOCAL,       "STORE_LOCAL",       ARGS_UI32,     "st_store_local",        TRIM_END)
+DEF_INSTR(GET_LOCAL_REF,     "GET_LOCAL_REF",     ARGS_UI32,     "st_get_local_ref",      TRIM_END)
+DEF_INSTR(ALLOCATE_LOCALS,   "ALLOCATE_LOCALS",   ARGS_UI32,     "st_allocate_locals",    TRIM_END)
+DEF_INSTR(CALL,              "CALL",              ARGS_UI32,     "st_call",               TRIM_END)
+DEF_INSTR(CALL_OBJECT,       "CALL_OBJECT",       ARGS_NONE,     "st_call_object",        TRIM_END)
+DEF_INSTR(CALL_BUILTIN,      "CALL_BUILTIN",      ARGS_UI32,     "st_call_builtin",       TRIM_END)
+DEF_INSTR(SWAP,              "SWAP",              ARGS_NONE,     "st_swap",               TRIM_END)
+DEF_INSTR(NEG,               "NEG",               ARGS_NONE,     "st_neg",                TRIM_END)
+DEF_INSTR(NOT,               "NOT",               ARGS_NONE,     "st_not",                TRIM_END)
+DEF_INSTR(WRITE_TO_REF,      "WRITE_TO_REF",      ARGS_NONE,     "st_write_to_ref",       TRIM_END)
