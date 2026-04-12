@@ -31,7 +31,7 @@ inline uint8_t print_42[] = {
 
 inline uint8_t print_10_factorial[] = {
     /* main */
-    /* 00 */ OP(LOAD_IMM), CONST_64(0xa),
+    /* 00 */ OP(LOAD_IMM), CONST_64(0x4),
     /* 01 */ OP(CALL), CONST_32(0x4),
     /* 02 */ OP(CALL_BUILTIN), CONST_32(0),
     /* 03 */ OP(RETURN),
@@ -49,9 +49,9 @@ inline uint8_t print_10_factorial[] = {
     /* 0d */ OP(RETURN)
 };
 
-inline uint8_t print_10_fib[] = {
+inline uint8_t print_30_fib[] = {
     /* main */
-    /* 00 */ OP(LOAD_IMM), CONST_64(10),
+    /* 00 */ OP(LOAD_IMM), CONST_64(30),
     /* 01 */ OP(CALL), CONST_32(0x4),
 
     /* 02 */ OP(CALL_BUILTIN), CONST_32(0),

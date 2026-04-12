@@ -18,11 +18,11 @@
 #define CNP_STENCIL_OUTPUT "cnp_func_hole"
 
 #if defined(__arm__)
-        throw std::runtime_error("Architecture __arm__ not yet supported");
+throw std::runtime_error("Architecture __arm__ not yet supported");
 #elif defined(__aarch64__)
-    #define JUMP_INSTRUCTION_SIZE 4
+#define JUMP_INSTRUCTION_SIZE 4
 #elif defined(__x86_64__)
-    #define JUMP_INSTRUCTION_SIZE 6
+#define JUMP_INSTRUCTION_SIZE 6
 #else
 throw std::runtime_error("Unknown architecture");
 #endif

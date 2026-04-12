@@ -27,7 +27,7 @@ namespace {
 
     std::size_t relocation_outer_size(uint32_t type) {
         // TODO: Take info from here if needed:
-        // https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter7-2/index.html
+        // https://docs.oracle.com/cd/E191 20-01/open.solaris/819-0690/chapter7-2/index.html
         // TODO!!!!
         return 8;
     }
