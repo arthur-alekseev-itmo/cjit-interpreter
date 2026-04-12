@@ -9,7 +9,8 @@
 #include "cnp/stencil/CnpStencilFactory.h"
 
 int main(int argc, char** argv) {
-    const auto stencil_factory = CnpStencilFactory();
+    auto stencil_factory = CnpStencilFactory();
+    stencil_factory.set_recompile(true);
     const auto interpreter = CnpInterpreter(stencil_factory.create());
     const auto sampleBc = BytecodeReader::read_file("/Users/arthur/Documents/cj2bc/even.cjbc");
     auto sample = InstructionList(sampleBc.get());

@@ -62,9 +62,9 @@ namespace {
         return {symbol->name(), std::move(code), std::move(patches)};
     }
 
-    int ensure_stencil_file(const std::string& sources, const std::string& output) {
-        if (const std::ifstream output_file(output); output_file) {
-            // TODO: Check modification dates like make (or use make)
+    int ensure_stencil_file(const std::string& sources, const std::string& output, const bool recompile) {
+        const auto output_file = std::ifstream(output);
+        if (!recompile && output_file) {
             return 0;
         }
         const std::string flags = "-Os -fPIC -fno-plt -fno-stack-protector -fno-asynchronous-unwind-tables";
@@ -91,15 +91,18 @@ namespace {
 }
 
 std::unique_ptr<CnpStencilCollection> CnpStencilFactory::create() const {
-    // TODO: Uncomment, currently hangs in debugger
-    ensure_stencil_file(this->stencil_path_, this->stencil_binary_path_);
+    ensure_stencil_file(
+        this->stencil_path_,
+        this->stencil_binary_path_,
+        recompile_
+    );
     const auto stencils = create_stencils(this->stencil_binary_path_);
     return std::make_unique<CnpStencilCollection>(stencils);
 }
 
 CnpStencilFactory::CnpStencilFactory() {
-    this->stencil_path_ = "stencils/basic_stencils.c";
-    this->stencil_binary_path_ = "basic_stencils.o";
+    this->stencil_path_ = "stencils/stencils.c";
+    this->stencil_binary_path_ = "stencils.o";
     this->recompile_ = false;
 }
 
@@ -114,7 +117,6 @@ CnpStencilFactory* CnpStencilFactory::set_stencil_binary(const std::string& path
 }
 
 CnpStencilFactory* CnpStencilFactory::set_recompile(const bool recompile) {
-    // TODO: Use!
     this->recompile_ = recompile;
     return this;
 }

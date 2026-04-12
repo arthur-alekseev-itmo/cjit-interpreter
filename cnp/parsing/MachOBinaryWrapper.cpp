@@ -60,6 +60,9 @@ void MachOBinaryWrapper::fill_symbols() {
 }
 
 const SymbolWrapper* MachOBinaryWrapper::get_symbol(const std::string& name) const {
+    if (!symbols_.contains("_" + name)) {
+        throw std::runtime_error("Cannot find stencil with name: " + name);
+    }
     return std::addressof(symbols_.at("_" + name));
 }
 

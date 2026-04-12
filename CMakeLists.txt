@@ -103,8 +103,3 @@ add_executable(cjit_interpreter main.cpp
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)
 
-configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/stencils/basic_stencils.c"
-        "${CMAKE_CURRENT_BINARY_DIR}/stencils/basic_stencils.c"
-        COPYONLY
-)
