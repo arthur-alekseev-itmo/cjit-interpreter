@@ -37,6 +37,6 @@ stencil_output_fn stencil_output = (stencil_output_fn)&cnp_func_hole;
 
 #define STENCIL_END \
 DECLARE_STENCIL_OUTPUT(uint64_t*, uint64_t*); \
-stencil_output(stack_top, locals);
+__attribute__((musttail)) return stencil_output(stack_top, locals);
 
 #define STENCIL_DECL(name) STENCIL __attribute__((used)) void name(uint64_t *stack_top, uint64_t *locals)

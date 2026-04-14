@@ -1,18 +1,50 @@
+#include "core/bytecode/io/BytecodeReader.h"
 
+#include <cxxopts.hpp>
 #include <iostream>
-#include <vector>
+#include <loguru.hpp>
 
-#include "bytecode/Instruction.h"
-#include "bytecode/examples/BytecodeExamples.h"
-#include "bytecode/io/BytecodeReader.h"
-#include "cnp/execution/CnpInterpreter.h"
-#include "cnp/stencil/CnpStencilFactory.h"
+#include "core/cnp/execution/CnpInterpreter.h"
+#include "core/cnp/stencil/CnpStencilFactory.h"
 
 int main(int argc, char** argv) {
-    auto stencil_factory = CnpStencilFactory();
-    // stencil_factory.set_recompile(true);
-    const auto interpreter = CnpInterpreter(stencil_factory.create());
-    const auto bytecode = BytecodeReader::read_file("out.cjbc");
+    cxxopts::Options options("CangJit-Interpreter", "Interpreter for Cangjie Bytecode");
+
+    options.add_options()
+        ("t,trace", "Enable stack tracing after each instruction via instrumentation", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("v,verbose", "Verbose logging of c&p process and instruction addresses", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("i,input", "Input .cjbc file location", cxxopts::value<std::string>())
+        ("r,recompile", "Require stencil recompilation, even if .o file exists", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("l,log", "Log output, default is log.log", cxxopts::value<std::string>());
+
+    const auto result = options.parse(argc, argv);
+
+    loguru::init(argc, argv);
+
+    const auto log_file =
+        result["log"].count()
+        ? result["log"].as<std::string>()
+        : "log.log";
+
+    if (result["trace"].count()) {
+        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_MAX);
+    } else {
+        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_0);
+    }
+
+    if (result["input"].count() != 1) {
+        std::cout << "Input must be provided via -i/--input";
+        return 1;
+    }
+
+    const auto bytecode = BytecodeReader::read_file(result["input"].as<std::string>());
+
+    const auto recompile = result["recompile"].count()
+        ? result["recompile"].as<bool>()
+        : false;
+    auto stencils_factory = CnpStencilFactory();
+    stencils_factory.set_recompile(recompile);
+
+    const auto interpreter = CnpInterpreter(stencils_factory.create());
     interpreter.execute(*bytecode);
-    return 0;
 }

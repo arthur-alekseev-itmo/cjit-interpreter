@@ -2,9 +2,12 @@
 
 #include <cassert>
 
+#include "loguru.hpp"
 #include "../../builtins/Builtins.h"
 #include "../../bytecode/Instruction.h"
 #include "../../bytecode/Opcode.h"
+#include "LIEF/ELF/enums.hpp"
+#include "LIEF/MachO/enums.hpp"
 
 #define ADVANCE ip += (OpcodeUtils::size(op)); break
 #define EXTRACT_ARGUMENT_VALUE(type, offset) (&bc_slice[ip + (offset)])
@@ -196,7 +199,7 @@ CnpFunction CnpCodegen::compile(const Bytecode& bc, CnpStencilCollection* stenci
     auto il = InstructionList(bc);
     std::size_t i = 0;
     for (const auto& instruction : il) {
-        std::cout << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction << std::endl;
+        VLOG_S(1) << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction << std::endl;
     }
 
     cnp_compile(

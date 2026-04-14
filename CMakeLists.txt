@@ -1,6 +1,28 @@
 cmake_minimum_required(VERSION 3.22.1)
 project(cjit_interpreter)
 
+include(FetchContent)
+
+# cxxopts dependency
+FetchContent_Declare(
+        cxxopts
+        GIT_REPOSITORY https://github.com/jarro2783/cxxopts
+        GIT_TAG        v3.3.1
+)
+
+FetchContent_MakeAvailable(cxxopts)
+
+# loguru dependency
+FetchContent_Declare(
+        loguru
+        GIT_REPOSITORY https://github.com/emilk/loguru
+        GIT_TAG        master
+)
+
+set(LOGURU_WITH_STREAMS TRUE)
+
+FetchContent_MakeAvailable(loguru)
+
 # LEAF dependency
 # LIEF build config. Set the default options for LIEF's project setup
 option(LIEF_DOC "Build LIEF docs" OFF)
@@ -22,7 +44,6 @@ else()
     # LIEF's version to be used (can be 'main')
     set(LIEF_VERSION 0.13.0)
 
-    include(FetchContent)
     FetchContent_Declare(LIEF
             GIT_REPOSITORY  "${LIEF_GIT_URL}"
             GIT_TAG         ${LIEF_VERSION}
@@ -58,54 +79,56 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(cjit_interpreter main.cpp
-        utils/utils.cpp
-        utils/utils.hpp
-        cnp/execution/CnpFunction.cpp
-        cnp/execution/CnpFunction.h
-        cnp/stencil/CnpStencil.cpp
-        cnp/stencil/CnpStencil.h
-        cnp/CnpSymbol.cpp
-        cnp/CnpSymbol.h
-        cnp/stencil/CnpStencilFactory.cpp
-        cnp/stencil/CnpStencilFactory.h
-        cnp/stencil/CnpStencilCollection.cpp
-        cnp/stencil/CnpStencilCollection.h
-        cnp/execution/CnpInterpreter.cpp
-        cnp/execution/CnpInterpreter.h
-        cnp/codegen/CnpCodegen.cpp
-        cnp/codegen/CnpCodegen.h
-        cnp/debug/CnpExecutionTrace.cpp
-        cnp/debug/CnpExecutionTrace.h
-        cnp/parsing/BinaryWrapper.cpp
-        cnp/parsing/BinaryWrapper.hpp
-        cnp/parsing/MachOBinaryWrapper.cpp
-        cnp/parsing/MachOBinaryWrapper.hpp
-        cnp/parsing/SymbolWrapper.cpp
-        cnp/parsing/SymbolWrapper.h
-        cnp/parsing/RelocationWrapper.cpp
-        cnp/parsing/RelocationWrapper.h
-        cnp/parsing/ElfBinaryWrapper.cpp
-        cnp/parsing/ElfBinaryWrapper.h
-        bytecode/Bytecode.cpp
-        bytecode/Bytecode.h
-        bytecode/Instruction.cpp
-        bytecode/Instruction.h
-        bytecode/Opcode.cpp
-        bytecode/Opcode.h
-        builtins/Builtins.cpp
-        builtins/Builtins.h
-        bytecode/io/BytecodeReader.cpp
-        bytecode/io/BytecodeReader.h
-        bytecode/examples/BytecodeExamples.cpp
-        bytecode/examples/BytecodeExamples.h
+        core/utils/utils.cpp
+        core/utils/utils.hpp
+        core/cnp/execution/CnpFunction.cpp
+        core/cnp/execution/CnpFunction.h
+        core/cnp/stencil/CnpStencil.cpp
+        core/cnp/stencil/CnpStencil.h
+        core/cnp/CnpSymbol.cpp
+        core/cnp/CnpSymbol.h
+        core/cnp/stencil/CnpStencilFactory.cpp
+        core/cnp/stencil/CnpStencilFactory.h
+        core/cnp/stencil/CnpStencilCollection.cpp
+        core/cnp/stencil/CnpStencilCollection.h
+        core/cnp/execution/CnpInterpreter.cpp
+        core/cnp/execution/CnpInterpreter.h
+        core/cnp/codegen/CnpCodegen.cpp
+        core/cnp/codegen/CnpCodegen.h
+        core/cnp/debug/CnpExecutionTrace.cpp
+        core/cnp/debug/CnpExecutionTrace.h
+        core/cnp/parsing/BinaryWrapper.cpp
+        core/cnp/parsing/BinaryWrapper.hpp
+        core/cnp/parsing/MachOBinaryWrapper.cpp
+        core/cnp/parsing/MachOBinaryWrapper.hpp
+        core/cnp/parsing/SymbolWrapper.cpp
+        core/cnp/parsing/SymbolWrapper.h
+        core/cnp/parsing/RelocationWrapper.cpp
+        core/cnp/parsing/RelocationWrapper.h
+        core/cnp/parsing/ElfBinaryWrapper.cpp
+        core/cnp/parsing/ElfBinaryWrapper.h
+        core/bytecode/Bytecode.cpp
+        core/bytecode/Bytecode.h
+        core/bytecode/Instruction.cpp
+        core/bytecode/Instruction.h
+        core/bytecode/Opcode.cpp
+        core/bytecode/Opcode.h
+        core/builtins/Builtins.cpp
+        core/builtins/Builtins.h
+        core/bytecode/io/BytecodeReader.cpp
+        core/bytecode/io/BytecodeReader.h
+        core/bytecode/examples/BytecodeExamples.cpp
+        core/bytecode/examples/BytecodeExamples.h
 
 )
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)
+target_link_libraries(cjit_interpreter cxxopts::cxxopts)
+target_link_libraries(cjit_interpreter loguru::loguru)
 
 add_custom_target(copy_stencils ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/stencils"
+        "stencils"
         "${CMAKE_CURRENT_BINARY_DIR}/stencils"
 )
 

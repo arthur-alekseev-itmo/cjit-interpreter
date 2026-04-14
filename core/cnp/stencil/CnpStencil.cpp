@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include "LIEF/LIEF.hpp"
+
 
 std::size_t CnpStencil::size() const {
     return code.size();
@@ -23,9 +25,9 @@ PatchStrategy determine_patch_strategy(uint32_t patch_type) {
 #elif defined(__aarch64__)
     switch (static_cast<LIEF::MachO::ARM64_RELOCATION>(patch_type)) {
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGE21:
-        return INDIRECT_21; // TODO: ну и дичь, тут походу 2 уровня косвенности
+        return INDIRECT_21;
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_GOT_LOAD_PAGEOFF12:
-        return INDIRECT_12; // TODO: ну и дичь, тут походу 2 уровня косвенности
+        return INDIRECT_12;
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGE21:
         return INDIRECT_21;
     case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGEOFF12:

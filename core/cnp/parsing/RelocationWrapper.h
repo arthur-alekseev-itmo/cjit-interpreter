@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "../../cmake-build-debug/_deps/lief-src/include/LIEF/Abstract/enums.hpp"
+#include "../../../cmake-build-debug/_deps/lief-src/include/LIEF/Abstract/enums.hpp"
 
 
 class RelocationWrapper {
