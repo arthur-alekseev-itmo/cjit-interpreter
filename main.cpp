@@ -1,40 +1,54 @@
+#include "core/bytecode/io/BytecodeReader.h"
 
-#include "ir/ir.hpp"
-#include <vector>
+#include <cxxopts.hpp>
+#include <iostream>
+#include <loguru.hpp>
 
-#include "cnp/execution/CnpInterpreter.h"
-#include "cnp/stencil/CnpStencilFactory.h"
+#include "core/cnp/execution/CnpInterpreter.h"
+#include "core/cnp/stencil/CnpStencilFactory.h"
 
 int main(int argc, char** argv) {
+    cxxopts::Options options("CangJit-Interpreter", "Interpreter for Cangjie Bytecode");
 
-    const auto bc_math_example = std::vector(
-        std::begin(basic_math_example),
-        std::end(basic_math_example)
-    );
+    options.add_options()
+        ("t,trace", "Enable stack tracing after each instruction via instrumentation", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("v,verbose", "Verbose logging of c&p process and instruction addresses", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("i,input", "Input .cjbc file location", cxxopts::value<std::string>())
+        ("r,recompile", "Require stencil recompilation, even if .o file exists", cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+        ("l,log", "Log output, default is log.log", cxxopts::value<std::string>());
 
-    const auto bc_loop = std::vector(
-        std::begin(infinite_loop_example),
-        std::end(infinite_loop_example)
-    );
+    const auto result = options.parse(argc, argv);
 
-    const auto bc_print_42 = std::vector(
-        std::begin(print_42),
-        std::end(print_42)
-    );
+    loguru::init(argc, argv);
 
-    const auto bc_print_10_factorial = std::vector(
-        std::begin(print_10_factorial),
-        std::end(print_10_factorial)
-    );
+    const auto log_file =
+        result["log"].count()
+        ? result["log"].as<std::string>()
+        : "log.log";
 
-    const auto bc_print_10_fib = std::vector(
-        std::begin(print_10_fib),
-        std::end(print_10_fib)
-    );
+    if (result["verbose"].count()) {
+        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_MAX);
+    } else {
+        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_0);
+    }
 
-    const auto stencil_factory = CnpStencilFactory();
-    const auto interpreter = CnpInterpreter(stencil_factory.create());
-    interpreter.execute(bc_print_10_factorial);
+    if (result["input"].count() != 1) {
+        std::cout << "Input must be provided via -i/--input";
+        return 1;
+    }
 
-    return 0;
+    const auto bytecode = BytecodeReader::read_file(result["input"].as<std::string>());
+
+    const auto recompile = result["recompile"].count()
+        ? result["recompile"].as<bool>()
+        : false;
+    auto stencils_factory = CnpStencilFactory();
+    stencils_factory.set_recompile(recompile);
+
+    auto interpreter = CnpInterpreter(stencils_factory.create());
+    const auto trace = result["trace"].count()
+        ? result["trace"].as<bool>()
+        : false;
+    interpreter.set_instrument(trace);
+    interpreter.execute(*bytecode);
 }
