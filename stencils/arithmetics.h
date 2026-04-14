@@ -5,36 +5,36 @@
 // ARITHMETICS
 
 STENCIL_DECL(st_add) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left + right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_sub) {
-    POP(left);
     POP(right);
-    PUSH(right - left);
+    POP(left);
+    PUSH(left - right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_mul) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left * right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_div) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left / right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_mod) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left % right);
     STENCIL_END
 }
@@ -44,43 +44,43 @@ STENCIL_DECL(st_mod) {
 // COMPARE
 
 STENCIL_DECL(st_eq) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left == right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_neq) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left != right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_le) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left <= right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_lt) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left < right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_ge) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left >= right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_gt) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left > right);
     STENCIL_END
 }
@@ -88,15 +88,15 @@ STENCIL_DECL(st_gt) {
 // LOGIC
 
 STENCIL_DECL(st_and) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left && right);
     STENCIL_END
 }
 
 STENCIL_DECL(st_or) {
-    POP(left);
     POP(right);
+    POP(left);
     PUSH(left || right);
     STENCIL_END
 }

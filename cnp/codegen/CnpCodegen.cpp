@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "../../builtins/Builtins.h"
+#include "../../bytecode/Instruction.h"
 #include "../../bytecode/Opcode.h"
 
 #define ADVANCE ip += (OpcodeUtils::size(op)); break
@@ -25,11 +26,24 @@ namespace {
         return false;
     }
 
-    std::size_t relocation_outer_size(uint32_t type) {
-        // TODO: Take info from here if needed:
-        // https://docs.oracle.com/cd/E191 20-01/open.solaris/819-0690/chapter7-2/index.html
-        // TODO!!!!
-        return 8;
+    std::size_t relocation_outer_size(CnpStencilPatch patch) {
+        const auto t = patch.architecture;
+        if (t == 12 /* AARCH64 (TODO: Find the type, dont use magic numbers) */) {
+            switch (static_cast<LIEF::MachO::ARM64_RELOCATION>(patch.type)) {
+                case LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_PAGE21: return 8;
+                default: return 0;
+            }
+        }
+        if (t == 62 /* X86_64 (TODO: Find the type, dont use magic numbers) */) {
+            switch (static_cast<LIEF::ELF::RELOC_x86_64>(patch.type)) {
+            case LIEF::ELF::RELOC_x86_64::R_X86_64_GOTPCRELX:
+            case LIEF::ELF::RELOC_x86_64::R_X86_64_REX_GOTPCRELX:
+            case LIEF::ELF::RELOC_x86_64::R_X86_64_PC32:
+                return 8;
+            default: return 0;
+            }
+        }
+        throw std::runtime_error("TODO!!");
     }
 
     struct function_layout {
@@ -49,7 +63,7 @@ namespace {
             const auto op = static_cast<Opcode>(bc.data()[ip]);
             const auto& stencil = (*stencils)[static_cast<std::size_t>(op)];
             for (const auto patch : stencil.patches) {
-                data_section_size += relocation_outer_size(patch.type);
+                data_section_size += relocation_outer_size(patch);
             }
             instruction_starts.push_back(instruction_size);
             instruction_size += stencil.size();
@@ -73,6 +87,12 @@ namespace {
         case Opcode::NOP: ADVANCE;
         case Opcode::READ_STACK:
         case Opcode::WRITE_STACK:
+        case Opcode::STORE_LOCAL:
+        case Opcode::STORE_GLOBAL:
+        case Opcode::STORE_CLOSURE:
+        case Opcode::LOAD_LOCAL:
+        case Opcode::LOAD_GLOBAL:
+        case Opcode::LOAD_CLOSURE:
             COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint32_t, 1));
             ADVANCE;
         case Opcode::LOAD_IMM:
@@ -85,17 +105,28 @@ namespace {
         case Opcode::MUL:
         case Opcode::ADD:
         case Opcode::SUB:
+        case Opcode::DIV:
+        case Opcode::GE:
+        case Opcode::GT:
+        case Opcode::LE:
+        case Opcode::LT:
+        case Opcode::EQ:
+        case Opcode::NEQ:
+        case Opcode::NOT:
+        case Opcode::NEG:
         case Opcode::EXIT:
         case Opcode::DUP:
         case Opcode::DROP:
         case Opcode::SWAP:
-        case Opcode::EQ:
         case Opcode::RETURN:
+        case Opcode::CALL_OBJECT:
             COPY_AND_PATCH();
             ADVANCE;
         case Opcode::JUMP_TRUE:
+        case Opcode::JUMP_FALSE:
         case Opcode::JUMP:
         case Opcode::CALL:
+        case Opcode::FUNCTION_ADDRESS:
             {
                 const auto jump_addr_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
                 const auto jump_addr = jumps[jump_addr_index];
@@ -123,7 +154,7 @@ namespace {
             }
         default:
             // TODO:
-            assert(false);
+            throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));
         }
     }
 
@@ -161,6 +192,12 @@ CnpFunction CnpCodegen::compile(const Bytecode& bc, CnpStencilCollection* stenci
     ] = calculate_layout(bc, stencils);
 
     const auto function = CnpFunction(data_section_size, instructions_size);
+
+    auto il = InstructionList(bc);
+    std::size_t i = 0;
+    for (const auto& instruction : il) {
+        std::cout << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction << std::endl;
+    }
 
     cnp_compile(
         function.function_ptr(),

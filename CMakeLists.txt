@@ -103,3 +103,10 @@ add_executable(cjit_interpreter main.cpp
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)
 
+add_custom_target(copy_stencils ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/stencils"
+        "${CMAKE_CURRENT_BINARY_DIR}/stencils"
+)
+
+add_dependencies(cjit_interpreter copy_stencils)

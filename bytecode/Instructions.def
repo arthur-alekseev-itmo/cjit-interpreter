@@ -2,8 +2,8 @@
 #define ARGS_UI64 9
 #define ARGS_UI32 5
 
-#define TRIM_END false
-#define WITH_END true
+#define TRIM_END true
+#define WITH_END false
 
 // Format:
 //        Opcode             Name                 Size           Stencil                  Cut last jump
@@ -31,8 +31,14 @@ DEF_INSTR(RETURN,            "RETURN",            ARGS_NONE,     "st_return",   
 DEF_INSTR(READ_STACK,        "READ_STACK",        ARGS_UI32,     "st_read_stack",         TRIM_END)
 DEF_INSTR(WRITE_STACK,       "WRITE_STACK",       ARGS_UI32,     "st_write_stack",        TRIM_END)
 DEF_INSTR(LOAD_LOCAL,        "LOAD_LOCAL",        ARGS_UI32,     "st_load_local",         TRIM_END)
+DEF_INSTR(LOAD_GLOBAL,       "LOAD_GLOBAL",       ARGS_UI32,     "st_load_global",        TRIM_END)
+DEF_INSTR(LOAD_CLOSURE,      "LOAD_CLOSURE",      ARGS_UI32,     "st_load_closure",       TRIM_END)
 DEF_INSTR(STORE_LOCAL,       "STORE_LOCAL",       ARGS_UI32,     "st_store_local",        TRIM_END)
+DEF_INSTR(STORE_GLOBAL,      "STORE_GLOBAL",      ARGS_UI32,     "st_store_global",       TRIM_END)
+DEF_INSTR(STORE_CLOSURE,     "STORE_CLOSURE",     ARGS_UI32,     "st_store_closure",      TRIM_END)
 DEF_INSTR(GET_LOCAL_REF,     "GET_LOCAL_REF",     ARGS_UI32,     "st_get_local_ref",      TRIM_END)
+DEF_INSTR(GET_GLOBAL_REF,    "GET_GLOBAL_REF",    ARGS_UI32,     "st_get_global_ref",     TRIM_END)
+DEF_INSTR(GET_CLOSURE_REF,   "GET_CLOSURE_REF",   ARGS_UI32,     "st_get_closure_ref",    TRIM_END)
 DEF_INSTR(ALLOCATE_LOCALS,   "ALLOCATE_LOCALS",   ARGS_UI32,     "st_allocate_locals",    TRIM_END)
 DEF_INSTR(CALL,              "CALL",              ARGS_UI32,     "st_call",               TRIM_END)
 DEF_INSTR(CALL_OBJECT,       "CALL_OBJECT",       ARGS_NONE,     "st_call_object",        TRIM_END)
@@ -41,3 +47,4 @@ DEF_INSTR(SWAP,              "SWAP",              ARGS_NONE,     "st_swap",     
 DEF_INSTR(NEG,               "NEG",               ARGS_NONE,     "st_neg",                TRIM_END)
 DEF_INSTR(NOT,               "NOT",               ARGS_NONE,     "st_not",                TRIM_END)
 DEF_INSTR(WRITE_TO_REF,      "WRITE_TO_REF",      ARGS_NONE,     "st_write_to_ref",       TRIM_END)
+DEF_INSTR(FUNCTION_ADDRESS,  "FUNCTION_ADDRESS",  ARGS_UI32,     "st_function_address",   TRIM_END)

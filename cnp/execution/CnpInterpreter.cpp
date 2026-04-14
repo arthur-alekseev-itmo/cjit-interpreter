@@ -6,10 +6,11 @@
 #include "../codegen/CnpCodegen.h"
 #include "../debug/CnpExecutionTrace.h"
 
-// #define INSTRUMENT_DEBUG
+#define INSTRUMENT_DEBUG
 
 void CnpInterpreter::execute(const Bytecode& bytecode) const {
     std::uint64_t stack[0x1000] = {};
+    std::uint64_t locals[0x1000] = {};
 #ifdef INSTRUMENT_DEBUG
     // Inits global variable :sob:
     const auto _ = CnpExecutionTrace(stack);
@@ -19,6 +20,9 @@ void CnpInterpreter::execute(const Bytecode& bytecode) const {
     const auto fn = CnpCodegen::compile(bytecode, stencils.get());
 #endif
     std::uint64_t* stack_top = stack;
+    std::uint64_t* locals_top = locals;
+    std::cout << "stack " << reinterpret_cast<void*>(stack_top) << std::endl;
+    std::cout << "local " << reinterpret_cast<void*>(locals_top) << std::endl;
     std::cout << fn;
-    fn.call(stack_top);
+    fn.call(stack_top, locals_top);
 }

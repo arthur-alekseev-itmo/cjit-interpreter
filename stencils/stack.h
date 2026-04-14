@@ -38,8 +38,3 @@ STENCIL_DECL(st_write_stack) {
     WRITE(value, STENCIL_HOLE_32_1(uint32_t));
     STENCIL_END
 }
-
-STENCIL_DECL(st_load_local) {
-
-    STENCIL_END
-}

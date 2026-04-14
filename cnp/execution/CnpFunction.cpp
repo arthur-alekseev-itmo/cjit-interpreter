@@ -33,7 +33,7 @@ namespace
 }
 
 
-std::uint64_t* CnpFunction::call(std::uint64_t* stack_top) const {
+std::uint64_t* CnpFunction::call(std::uint64_t* stack_top, std::uint64_t* locals) const {
     const auto rc = mprotect(
         this->memory_begin_,
         this->memory_size_,
@@ -45,7 +45,7 @@ std::uint64_t* CnpFunction::call(std::uint64_t* stack_top) const {
     }
 
     std::cout << reinterpret_cast<void*>(function_ptr_) << std::endl;
-    return this->function_ptr_(stack_top);
+    return this->function_ptr_(stack_top, locals);
 }
 
 CnpFunction::CnpFunction(

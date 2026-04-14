@@ -44,6 +44,8 @@ std::unique_ptr<Bytecode> CnpExecutionTrace::instrument(const Bytecode& bc) {
         switch (op) {
         case Opcode::JUMP:
         case Opcode::JUMP_TRUE:
+        case Opcode::JUMP_FALSE:
+        case Opcode::FUNCTION_ADDRESS:
         case Opcode::CALL:
             {
                 const auto fst_arg = *reinterpret_cast<const uint32_t*>(bc.data() + ip + 1);
