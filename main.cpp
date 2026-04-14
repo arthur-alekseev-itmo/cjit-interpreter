@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         ? result["log"].as<std::string>()
         : "log.log";
 
-    if (result["trace"].count()) {
+    if (result["verbose"].count()) {
         loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_MAX);
     } else {
         loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_0);
@@ -45,6 +45,10 @@ int main(int argc, char** argv) {
     auto stencils_factory = CnpStencilFactory();
     stencils_factory.set_recompile(recompile);
 
-    const auto interpreter = CnpInterpreter(stencils_factory.create());
+    auto interpreter = CnpInterpreter(stencils_factory.create());
+    const auto trace = result["trace"].count()
+        ? result["trace"].as<bool>()
+        : false;
+    interpreter.set_instrument(trace);
     interpreter.execute(*bytecode);
 }
