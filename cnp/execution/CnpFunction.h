@@ -6,11 +6,11 @@
 #include "../data_pool/CnpDataPool.h"
 #include "../stencil/CnpStencilCollection.h"
 
-typedef size_t*(*cnp_function_ptr)(size_t*) __attribute__((preserve_none));
+typedef uint64_t*(*cnp_function_ptr)(uint64_t*) __attribute__((preserve_none));
 
 class CnpFunction {
 public:
-    std::size_t* call(std::size_t* stack_top) const;
+    uint64_t* call(uint64_t* stack_top) const;
     CnpFunction(std::size_t data_size, std::size_t instructions_size);
     ~CnpFunction();
 

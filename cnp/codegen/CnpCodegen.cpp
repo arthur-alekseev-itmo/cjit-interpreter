@@ -3,13 +3,26 @@
 #include <cassert>
 
 #define ADVANCE(size) ip += size; break
-#define JUMP_SIZE 5
 #define EXTRACT_ARGUMENT_VALUE(type, offset) (&bc_slice[ip + (offset)])
 #define EXTRACT_ARGUMENT_PTR(type, offset) CnpPatchValue(sizeof(type), reinterpret_cast<const uint8_t*>(&bc_slice[ip + (offset)]))
 #define COPY_AND_PATCH(...) (*stencils)[op].patch(function_ptr, function_offset, data_ptr, data_offset, {__VA_ARGS__})
 
+#if defined(__aarch64__)
+    #define JUMP_SIZE 0
+#elif defined(__x86_64__)
+    #define JUMP_SIZE 5
+#endif
+
+
 namespace {
-    std::size_t relocation_outer_size(const LIEF::ELF::RELOC_x86_64 type) {
+    bool is_relative_jump(CnpStencilPatch patch) {
+        const auto t = patch.architecture;
+        if (t == 12 /* AARCH64 (TODO: Find the type, dont use magic numbers) */)
+            return patch.type == static_cast<uint32_t>(LIEF::MachO::ARM64_RELOCATION::ARM64_RELOC_BRANCH26);
+        return false;
+    }
+
+    std::size_t relocation_outer_size(uint32_t type) {
         // TODO: Take info from here if needed:
         // https://docs.oracle.com/cd/E19120-01/open.solaris/819-0690/chapter7-2/index.html
         // TODO!!!!
@@ -82,16 +95,20 @@ namespace {
         case JUMP:
         case CALL:
             {
-                // Тяжело...
-                // TODO: Somehow understand if the address will be relative or absolute.
-                // Absolute for now
                 const auto jump_addr_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
                 const auto jump_addr = jumps[jump_addr_index];
-                const auto relative_jump = jump_addr - function_offset - JUMP_SIZE;
+                const uint64_t relative_jump = jump_addr - function_offset - JUMP_SIZE;
                 const auto relative_jump_patch_addr = reinterpret_cast<const uint8_t*>(&relative_jump);
                 const auto absolute_jump = function_ptr + jump_addr;
                 const auto absolute_jump_patch_addr = reinterpret_cast<const uint8_t*>(&absolute_jump);
-                COPY_AND_PATCH(CnpPatchValue(sizeof(int64_t), absolute_jump_patch_addr ));
+
+                if (is_relative_jump(stencils->operator[](op).patches[0])) {
+                    // Relative
+                    COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), relative_jump_patch_addr ));
+                } else {
+                    // Absolute
+                    COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), absolute_jump_patch_addr ));
+                }
                 ADVANCE(5);
             }
         default:

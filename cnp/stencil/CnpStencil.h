@@ -4,18 +4,21 @@
 #include <utility>
 #include <vector>
 #include <memory>
+#include <vector>
 
 #include "../../cmake-build-debug/_deps/lief-src/include/LIEF/ELF/enums.hpp"
 #include "LIEF/MachO/enums.hpp"
 
 struct CnpStencilPatch {
-    LIEF::ELF::RELOC_x86_64 type; // TODO: It is stored as uint8_t in Relocation.cpp, maybe copy it
+    uint32_t type;
     std::size_t address;
+    uint32_t architecture;
 
     CnpStencilPatch(
-        const LIEF::ELF::RELOC_x86_64 type,
-        const std::size_t address
-    ) : type(type), address(address) {}
+        const uint32_t type,
+        const std::size_t address,
+        const uint32_t architecture
+    ) : type(type), address(address), architecture(architecture) {}
 };
 
 struct CnpPatchValue {

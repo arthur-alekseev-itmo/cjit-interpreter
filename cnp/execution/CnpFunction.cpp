@@ -32,10 +32,10 @@ namespace
 }
 
 
-std::size_t* CnpFunction::call(std::size_t* stack_top) const {
+std::uint64_t* CnpFunction::call(std::uint64_t* stack_top) const {
     const auto rc = mprotect(
-        reinterpret_cast<void*>(this->memory_begin_),
-        this->function_size_,
+        this->memory_begin_,
+        this->memory_size_,
         PROT_EXEC | PROT_READ
     );
 
@@ -43,6 +43,7 @@ std::size_t* CnpFunction::call(std::size_t* stack_top) const {
         perror("Failed to create executable memory (m protect)");
     }
 
+    std::cout << reinterpret_cast<void*>(function_ptr_) << std::endl;
     return this->function_ptr_(stack_top);
 }
 
