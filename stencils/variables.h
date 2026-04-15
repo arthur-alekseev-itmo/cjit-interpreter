@@ -34,9 +34,10 @@ STENCIL_DECL(st_get_closure_ref) {
 }
 
 STENCIL_DECL(st_write_to_ref) {
-    POP(ref);
     POP(value);
+    POP(ref);
     *((uint64_t*)ref) = value;
+    PUSH(value);
     STENCIL_END
 }
 

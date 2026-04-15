@@ -44,7 +44,6 @@ std::uint64_t* CnpFunction::call(std::uint64_t* stack_top, std::uint64_t* locals
         perror("Failed to create executable memory (m protect)");
     }
 
-    std::cout << reinterpret_cast<void*>(function_ptr_) << std::endl;
     return this->function_ptr_(stack_top, locals);
 }
 
@@ -85,20 +84,20 @@ uint8_t* CnpFunction::function_ptr() const {
 
 
 std::ostream& operator<<(std::ostream& os, const CnpFunction& fn) {
-    std::cout << std::hex << std::setfill('0');
+    os << std::hex << std::setfill('0');
 
-    std::cout << std::endl << "code: ";
+    os << std::endl << "code: ";
     for (std::size_t i = 0; i < fn.function_size_; i++) {
         const auto byte = reinterpret_cast<uint8_t*>(fn.function_ptr_)[i];
-        std::cout << std::setw(2) << static_cast<unsigned int>(byte) << " ";
+        os << std::setw(2) << static_cast<unsigned int>(byte) << " ";
     }
 
-    std::cout << std::endl << "data: ";
+    os << std::endl << "data: ";
     for (std::size_t i = 0; i < fn.memory_size_ - fn.function_size_; i++) {
         const auto byte = reinterpret_cast<uint8_t*>(fn.memory_begin_)[i];
-        std::cout << std::setw(2) << static_cast<unsigned int>(byte) << " ";
+        os << std::setw(2) << static_cast<unsigned int>(byte) << " ";
     }
 
-    std::cout << std::dec << std::endl; // Reset to decimal for subsequent prints
+    os << std::dec << std::endl; // Reset to decimal for subsequent prints
     return os;
 }

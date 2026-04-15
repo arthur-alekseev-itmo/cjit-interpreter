@@ -128,7 +128,7 @@ target_link_libraries(cjit_interpreter loguru::loguru)
 
 add_custom_target(copy_stencils ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "stencils"
+        "${CMAKE_CURRENT_SOURCE_DIR}/stencils"
         "${CMAKE_CURRENT_BINARY_DIR}/stencils"
 )
 
