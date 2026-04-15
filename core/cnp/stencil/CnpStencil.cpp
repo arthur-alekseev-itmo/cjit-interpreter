@@ -1,6 +1,7 @@
 #include "CnpStencil.h"
 
 #include <cstring>
+#include <iostream>
 
 #include "LIEF/LIEF.hpp"
 
@@ -55,6 +56,11 @@ static void set_bits(uint32_t *loc, uint8_t loc_start, uint64_t value, uint8_t v
     const uint32_t patch = get_bits(value, value_start, width) << loc_start;
     temp_val |= patch;
     memcpy(loc, &temp_val, sizeof(temp_val));
+}
+
+static uint32_t resolve_size_aarch64(uint32_t x) {
+    if (x < 8) return 8;
+    return x;
 }
 
 void CnpStencil::patch(
@@ -125,9 +131,11 @@ void CnpStencil::patch(
             {
                 auto* location = reinterpret_cast<uint32_t*>(function_pointer + function_offset + patch.address);
                 const auto absolute_got_offset = reinterpret_cast<uint64_t>(got_pointer + got_offset);
-                const auto got_page_offset = (absolute_got_offset & 0xFFF) >> 3;
-                set_bits(location, 10, got_page_offset, 0, 12);
-                got_offset += values_vector[current_value].size;
+                uint32_t instr = *location;
+                uint8_t shift = (instr >> 30) & 0x3;
+                uint64_t value = absolute_got_offset & 0xFFF;
+                set_bits(location, 10, value, shift, 12);
+                got_offset += resolve_size_aarch64(values_vector[current_value].size);
                 current_value++;
                 break;
             }

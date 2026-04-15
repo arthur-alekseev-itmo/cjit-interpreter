@@ -96,6 +96,7 @@ namespace {
         case Opcode::LOAD_LOCAL:
         case Opcode::LOAD_GLOBAL:
         case Opcode::LOAD_CLOSURE:
+        case Opcode::GET_LOCAL_REF:
             COPY_AND_PATCH(EXTRACT_ARGUMENT_PTR(uint32_t, 1));
             ADVANCE;
         case Opcode::LOAD_IMM:
@@ -123,6 +124,7 @@ namespace {
         case Opcode::SWAP:
         case Opcode::RETURN:
         case Opcode::CALL_OBJECT:
+        case Opcode::WRITE_TO_REF:
             COPY_AND_PATCH();
             ADVANCE;
         case Opcode::JUMP_TRUE:
@@ -199,7 +201,7 @@ CnpFunction CnpCodegen::compile(const Bytecode& bc, CnpStencilCollection* stenci
     auto il = InstructionList(bc);
     std::size_t i = 0;
     for (const auto& instruction : il) {
-        VLOG_S(1) << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction << std::endl;
+        VLOG_S(1) << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction;
     }
 
     cnp_compile(

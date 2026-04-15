@@ -27,9 +27,9 @@ int main(int argc, char** argv) {
         : "log.log";
 
     if (result["verbose"].count()) {
-        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_MAX);
+        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_MAX);
     } else {
-        loguru::add_file(log_file.c_str(), loguru::Append, loguru::Verbosity_0);
+        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_0);
     }
 
     if (result["input"].count() != 1) {

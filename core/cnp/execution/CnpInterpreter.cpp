@@ -28,9 +28,11 @@ void CnpInterpreter::execute(const Bytecode& bytecode) const {
         const auto _ = CnpExecutionTrace(stack);
         const auto instrumented_bc = CnpExecutionTrace::instrument(bytecode);
         const auto fn = CnpCodegen::compile(*instrumented_bc, stencils.get());
+        VLOG_S(1) << fn << std::endl;
         fn.call(stack_top, locals_top);
     } else {
         const auto fn = CnpCodegen::compile(bytecode, stencils.get());
+        VLOG_S(1) << fn << std::endl;
         fn.call(stack_top, locals_top);
     }
 }
