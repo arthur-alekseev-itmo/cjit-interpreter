@@ -20,6 +20,7 @@ int main(int argc, char** argv) {
     const auto result = options.parse(argc, argv);
 
     loguru::init(argc, argv);
+    loguru::g_preamble = false;
 
     const auto log_file =
         result["log"].count()
@@ -49,6 +50,7 @@ int main(int argc, char** argv) {
     const auto trace = result["trace"].count()
         ? result["trace"].as<bool>()
         : false;
+
     interpreter.set_instrument(trace);
     interpreter.execute(*bytecode);
 }
