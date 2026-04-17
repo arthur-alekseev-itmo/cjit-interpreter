@@ -119,6 +119,8 @@ add_executable(cjit_interpreter main.cpp
         core/bytecode/io/BytecodeReader.h
         core/bytecode/examples/BytecodeExamples.cpp
         core/bytecode/examples/BytecodeExamples.h
+        core/cnp/caching/StencilCache.cpp
+        core/cnp/caching/StencilCache.h
 
 )
 

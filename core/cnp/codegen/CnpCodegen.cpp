@@ -110,6 +110,7 @@ namespace {
         case Opcode::ADD:
         case Opcode::SUB:
         case Opcode::DIV:
+        case Opcode::MOD:
         case Opcode::GE:
         case Opcode::GT:
         case Opcode::LE:
@@ -118,6 +119,11 @@ namespace {
         case Opcode::NEQ:
         case Opcode::NOT:
         case Opcode::NEG:
+        case Opcode::AND:
+        case Opcode::OR:
+        case Opcode::BITAND:
+        case Opcode::BITOR:
+        case Opcode::BITXOR:
         case Opcode::EXIT:
         case Opcode::DUP:
         case Opcode::DROP:
