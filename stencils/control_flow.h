@@ -47,7 +47,6 @@ STENCIL_DECL(st_jump) {
 }
 
 STENCIL_DECL(st_call) {
-    // TODO: Allocate locals for future call and save them here to restore previous locals
     void (* STENCIL target)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(void (* STENCIL)(uint64_t*, uint64_t*));
     target(stack_top, locals + TODO_GOOD_LOCAL_COUNT);
     STENCIL_END

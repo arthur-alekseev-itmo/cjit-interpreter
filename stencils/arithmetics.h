@@ -2,117 +2,46 @@
 
 #include "essential.h"
 
+#define BASIC_MATH_UOPERATOR(name, operator) \
+STENCIL_DECL(name) { \
+    POP(operand); \
+    PUSH(operator operand); \
+    STENCIL_END \
+}
+
+#define BASIC_MATH_BOPERATOR(name, operator) \
+STENCIL_DECL(name) { \
+    POP(right); \
+    POP(left); \
+    PUSH(left operator right); \
+    STENCIL_END \
+}
+
 // ARITHMETICS
-
-STENCIL_DECL(st_add) {
-    POP(right);
-    POP(left);
-    PUSH(left + right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_sub) {
-    POP(right);
-    POP(left);
-    PUSH(left - right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_mul) {
-    POP(right);
-    POP(left);
-    PUSH(left * right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_div) {
-    POP(right);
-    POP(left);
-    PUSH(left / right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_mod) {
-    POP(right);
-    POP(left);
-    PUSH(left % right);
-    STENCIL_END
-}
-
-
+BASIC_MATH_BOPERATOR(st_add, +)
+BASIC_MATH_BOPERATOR(st_sub, -)
+BASIC_MATH_BOPERATOR(st_mul, *)
+BASIC_MATH_BOPERATOR(st_div, /)
+BASIC_MATH_BOPERATOR(st_mod, %)
 
 // COMPARE
+BASIC_MATH_BOPERATOR(st_eq, ==)
+BASIC_MATH_BOPERATOR(st_neq, !=)
+BASIC_MATH_BOPERATOR(st_le, <=)
+BASIC_MATH_BOPERATOR(st_lt, <)
+BASIC_MATH_BOPERATOR(st_ge, >=)
+BASIC_MATH_BOPERATOR(st_gt, >)
 
-STENCIL_DECL(st_eq) {
-    POP(right);
-    POP(left);
-    PUSH(left == right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_neq) {
-    POP(right);
-    POP(left);
-    PUSH(left != right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_le) {
-    POP(right);
-    POP(left);
-    PUSH(left <= right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_lt) {
-    POP(right);
-    POP(left);
-    PUSH(left < right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_ge) {
-    POP(right);
-    POP(left);
-    PUSH(left >= right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_gt) {
-    POP(right);
-    POP(left);
-    PUSH(left > right);
-    STENCIL_END
-}
+// BITWISE
+BASIC_MATH_BOPERATOR(st_bit_and, &)
+BASIC_MATH_BOPERATOR(st_bit_or, |)
+BASIC_MATH_BOPERATOR(st_bit_xor, ^)
 
 // LOGIC
-
-STENCIL_DECL(st_and) {
-    POP(right);
-    POP(left);
-    PUSH(left && right);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_or) {
-    POP(right);
-    POP(left);
-    PUSH(left || right);
-    STENCIL_END
-}
+BASIC_MATH_BOPERATOR(st_and, &&)
+BASIC_MATH_BOPERATOR(st_or, ||)
 
 // UNARY
-
-STENCIL_DECL(st_neg) {
-    POP(arg);
-    PUSH(-arg);
-    STENCIL_END
-}
-
-STENCIL_DECL(st_not) {
-    POP(arg);
-    PUSH(!arg);
-    STENCIL_END
-}
-
+BASIC_MATH_UOPERATOR(st_neg, -)
+BASIC_MATH_UOPERATOR(st_not, !)
 
