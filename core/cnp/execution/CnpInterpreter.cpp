@@ -16,8 +16,9 @@ CnpInterpreter* CnpInterpreter::set_instrument(bool instrument) {
 void CnpInterpreter::execute(const Bytecode& bytecode) const {
     std::uint64_t stack[0x1000] = {};
     std::uint64_t locals[0x1000] = {};
-    std::uint64_t* stack_top = stack;
-    std::uint64_t* locals_top = locals;
+
+    auto* stack_top = stack;
+    auto* locals_top = locals;
 
     LOG_F(1, "stack pointer: %p\n", reinterpret_cast<void*>(stack_top));
     LOG_F(1, "local pointer: %p\n", reinterpret_cast<void*>(locals_top));
@@ -25,7 +26,7 @@ void CnpInterpreter::execute(const Bytecode& bytecode) const {
     // Copy and paste makes me sad but CPP makes me sadder
     if (instrument) {
         // Inits global variable :sob:
-        const auto _ = CnpExecutionTrace(stack);
+        const auto _ = CnpExecutionTrace(stack_top, locals_top);
         const auto instrumented_bc = CnpExecutionTrace::instrument(bytecode);
         const auto fn = CnpCodegen::compile(*instrumented_bc, stencils.get());
         VLOG_S(1) << fn << std::endl;

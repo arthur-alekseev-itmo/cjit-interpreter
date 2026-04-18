@@ -116,7 +116,7 @@ void CnpStencil::patch(
             {
                 const auto got_page = reinterpret_cast<uint64_t>(got_pointer + got_offset) & ~0xFFF;
                 const auto ip_page = reinterpret_cast<uint64_t>(function_pointer + function_offset + patch.address + sizeof(uint32_t)) & ~0xFFF;
-                const auto relative_got_page = got_page - ip_page;
+                const auto relative_got_page = (got_page - ip_page) >> 12;
                 memcpy(
                     got_pointer + got_offset,
                     values_vector[current_value].address,

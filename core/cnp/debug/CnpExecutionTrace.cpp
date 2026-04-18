@@ -9,20 +9,24 @@
 enum class Opcode : uint8_t;
 // I don't want to deal with C++ goofy method pointers etc
 uint64_t* global_base_;
+uint64_t* global_locals_;
 std::size_t global_current_instruction_idx_ = 0;
 
-CnpExecutionTrace::CnpExecutionTrace(uint64_t* base) : base_(base) {
-    global_base_ = base;
+CnpExecutionTrace::CnpExecutionTrace(uint64_t* stack_base, uint64_t* locals_base) : base_(stack_base) {
+    global_base_ = stack_base;
+    global_locals_ = locals_base;
 }
 
-void trace(const uint64_t* stack) {
+void trace(const uint64_t* stack, const uint64_t* locals) {
     const uint64_t* stack_ptr = stack;
+    const uint64_t* locals_ptr = locals;
     if (stack_ptr - global_base_ > 1024) {
         std::cout << "STACK OVERFLOW" << std::endl;
         // This exact line will not throw but just cause Segfault
         throw std::runtime_error("STACK OVERFLOW");
     }
-    std::cout << global_current_instruction_idx_++ << "[";
+
+    std::cout << global_current_instruction_idx_++ << " [";
     while (stack_ptr > global_base_) {
         std::cout << " " << *(--stack_ptr);
     }

@@ -9,7 +9,7 @@
 #define PUSH(value) *stack_top++ = (int64_t)(value)
 #define WRITE(name, offset) *(stack_top - (offset)) = (int64_t)(value)
 
-extern void cnp_func_hole(void) STENCIL;
+extern uint64_t* cnp_func_hole(void) STENCIL;
 
 extern __attribute__((visibility("hidden"))) uint32_t cnp_value_hole_1;
 extern __attribute__((visibility("hidden"))) uint32_t cnp_value_hole_2;
@@ -32,11 +32,19 @@ extern __attribute__((visibility("hidden"))) uint64_t cnp_value_hole_4;
 typedef return_type(*stencil_fn)(__VA_ARGS__);
 
 #define DECLARE_STENCIL_OUTPUT(...) \
-typedef void(*stencil_output_fn)(__VA_ARGS__) STENCIL; \
+typedef uint64_t* (*stencil_output_fn)(__VA_ARGS__) STENCIL; \
 stencil_output_fn stencil_output = (stencil_output_fn)&cnp_func_hole;
 
 #define STENCIL_END \
 DECLARE_STENCIL_OUTPUT(uint64_t*, uint64_t*); \
 __attribute__((musttail)) return stencil_output(stack_top, locals);
 
-#define STENCIL_DECL(name) STENCIL __attribute__((used)) void name(uint64_t *stack_top, uint64_t *locals)
+#define STENCIL_DECL(name) STENCIL __attribute__((used)) uint64_t* name(uint64_t* stack_top, uint64_t* locals)
+
+#define PUSH_CALLEE_SAVED_REGISTERS \
+    __asm__ volatile("sub sp, sp, #32\n stp x19, x20, [sp, #0]\n stp x21, x22, [sp, #16]\n" ::: "memory")
+    // __asm__ volatile("pushq %%rdi; pushq %%rsi;" ::: "memory")
+
+#define POP_CALLEE_SAVED_REGISTERS \
+    __asm__ volatile("ldp x19, x20, [sp, #0]\n ldp x21, x22, [sp, #16]\n add sp, sp, #32\n" ::: "memory")
+    // __asm__ volatile("popq %%rdi; popq %%rsi;" ::: "memory")
