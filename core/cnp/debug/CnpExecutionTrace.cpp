@@ -26,11 +26,6 @@ void trace(const uint64_t* stack, const uint64_t* locals) {
         throw std::runtime_error("STACK OVERFLOW");
     }
 
-    while (locals_ptr > global_locals_) {
-        locals_ptr -= 32;
-        std::cout << "  ";
-    }
-
     std::cout << global_current_instruction_idx_++ << " [";
     while (stack_ptr > global_base_) {
         std::cout << " " << *(--stack_ptr);
