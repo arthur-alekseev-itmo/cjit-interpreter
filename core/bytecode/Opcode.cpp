@@ -5,7 +5,7 @@
 std::string OpcodeUtils::to_string(const Opcode opcode) {
     switch (opcode) {
     #define DEF_INSTR(opcode, name, size, stencil, trim) case Opcode::opcode: return name;
-    #include "Instructions.def"
+    #include "Instructions.inc"
     #undef DEF_INSTR
     default: throw std::runtime_error("Unknown opcode");
     }
@@ -14,7 +14,7 @@ std::string OpcodeUtils::to_string(const Opcode opcode) {
 std::size_t OpcodeUtils::size(const Opcode opcode) {
     switch (opcode) {
     #define DEF_INSTR(opcode, name, size, stencil, trim) case Opcode::opcode: return size;
-    #include "Instructions.def"
+    #include "Instructions.inc"
     #undef DEF_INSTR
     default: throw std::runtime_error("Unknown opcode");
     }

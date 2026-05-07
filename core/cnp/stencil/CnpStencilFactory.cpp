@@ -83,7 +83,7 @@ namespace {
 #endif
 
         #define DEF_INSTR(opcode, name, size, stencil, trim) stencils[static_cast<std::size_t>(Opcode::opcode)] = parse_stencil(binary.get(), binary->get_symbol(stencil), trim);
-        #include "../../bytecode/Instructions.def"
+        #include "../../bytecode/Instructions.inc"
         #undef DEF_INSTR
 
         return stencils;

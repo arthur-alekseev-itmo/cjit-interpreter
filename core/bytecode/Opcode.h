@@ -5,7 +5,7 @@
 
 enum class Opcode : uint8_t {
     #define DEF_INSTR(opcode, name, size, stencil, trim) opcode,
-    #include "Instructions.def"
+    #include "Instructions.inc"
     #undef DEF_INSTR
     NUM_OPCODES
 };

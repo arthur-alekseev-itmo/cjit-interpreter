@@ -121,6 +121,10 @@ add_executable(cjit_interpreter main.cpp
         core/bytecode/examples/BytecodeExamples.h
         core/cnp/caching/StencilCache.cpp
         core/cnp/caching/StencilCache.h
+        core/runtime/RtClass.cpp
+        core/runtime/RtClass.h
+        core/runtime/RtObject.cpp
+        core/runtime/RtObject.h
 
 )
 
