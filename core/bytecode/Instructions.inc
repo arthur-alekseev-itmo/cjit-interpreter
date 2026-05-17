@@ -54,3 +54,10 @@ DEF_INSTR(NEG,               "NEG",               ARGS_NONE,     "st_neg",      
 DEF_INSTR(NOT,               "NOT",               ARGS_NONE,     "st_not",                TRIM_END)
 DEF_INSTR(WRITE_TO_REF,      "WRITE_TO_REF",      ARGS_NONE,     "st_write_to_ref",       TRIM_END)
 DEF_INSTR(FUNCTION_ADDRESS,  "FUNCTION_ADDRESS",  ARGS_UI32,     "st_function_address",   TRIM_END)
+DEF_INSTR(NEW,               "NEW",               ARGS_UI32,     "st_new",                TRIM_END)
+DEF_INSTR(GET_FIELD_REF,     "GET_FIELD_REF",     ARGS_UI32,     "st_get_field_ref",      TRIM_END)
+DEF_INSTR(GET_FIELD,         "GET_FIELD",         ARGS_UI32,     "st_get_field",          TRIM_END)
+DEF_INSTR(BOX,               "BOX",               ARGS_UI32,     "st_box",                TRIM_END)
+DEF_INSTR(UNBOX,             "UNBOX",             ARGS_NONE,     "st_unbox",              TRIM_END)
+DEF_INSTR(LOAD_CLASS,        "LOAD_CLASS",        ARGS_UI32,     "st_load_class",         TRIM_END)
+

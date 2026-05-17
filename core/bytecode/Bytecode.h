@@ -21,11 +21,6 @@ BYTE_IDX(name, 0), BYTE_IDX(name, 1), BYTE_IDX(name, 2), BYTE_IDX(name, 3)
 #define CONST_64(value) (uint8_t)value, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 #define CONST_32(value) (uint8_t)value, 0x00, 0x00, 0x00
 
-struct BytecodeHeader {
-    char magic[4];
-    uint32_t size;
-};
-
 class Bytecode {
 public:
     Bytecode(const uint8_t* source, std::size_t size);
@@ -33,7 +28,6 @@ public:
 
     [[nodiscard]] std::size_t size() const;
     [[nodiscard]] const uint8_t* data() const;
-
 
 private:
     std::vector<uint8_t> content_;

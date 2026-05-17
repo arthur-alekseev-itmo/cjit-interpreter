@@ -6,6 +6,7 @@
 
 #include "core/cnp/execution/CnpInterpreter.h"
 #include "core/cnp/stencil/CnpStencilFactory.h"
+#include "core/runtime/Runtime.h"
 
 int main(int argc, char** argv) {
     cxxopts::Options options("CangJit-Interpreter", "Interpreter for Cangjie Bytecode");
@@ -40,7 +41,9 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    const auto bytecode = BytecodeReader::read_file(result["input"].as<std::string>());
+    const auto bytecode_file = BytecodeReader::read_file(result["input"].as<std::string>());
+    Runtime::build(bytecode_file->get_classes());
+    const auto bytecode = bytecode_file->get_bytecode();
 
     const auto recompile = result["recompile"].count()
         ? result["recompile"].as<bool>()

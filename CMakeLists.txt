@@ -121,11 +121,20 @@ add_executable(cjit_interpreter main.cpp
         core/bytecode/examples/BytecodeExamples.h
         core/cnp/caching/StencilCache.cpp
         core/cnp/caching/StencilCache.h
-        core/runtime/RtClass.cpp
-        core/runtime/RtClass.h
-        core/runtime/RtObject.cpp
-        core/runtime/RtObject.h
-
+        core/runtime/objects/RtClass.cpp
+        core/runtime/objects/RtClass.h
+        core/runtime/objects/RtObject.cpp
+        core/runtime/objects/RtObject.h
+        core/runtime/objects/RtMember.cpp
+        core/runtime/objects/RtMember.h
+        core/bytecode/file/BytecodeClass.cpp
+        core/bytecode/file/BytecodeClass.h
+        core/bytecode/file/BytecodeFile.cpp
+        core/bytecode/file/BytecodeFile.h
+        core/runtime/RtClassHierarchy.cpp
+        core/runtime/RtClassHierarchy.h
+        core/runtime/Runtime.cpp
+        core/runtime/Runtime.h
 )
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)
