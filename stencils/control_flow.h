@@ -66,9 +66,11 @@ STENCIL_DECL(st_call_object) {
     stack_top = call_address(stack_top, locals);
 
     POP(function_address);
-    if (function_address != NULL) {
-        uint64_t* (* STENCIL target)(uint64_t*, uint64_t*) = (uint64_t* (* STENCIL)(uint64_t*, uint64_t*))function_address;
+    uint64_t* (* STENCIL target)(uint64_t*, uint64_t*) = (uint64_t* (* STENCIL)(uint64_t*, uint64_t*))function_address;
+
+    if (target != NULL) {
         stack_top = target(stack_top, locals + TODO_GOOD_LOCAL_COUNT);
     }
+
     STENCIL_END
 }

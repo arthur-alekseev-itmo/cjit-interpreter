@@ -1,8 +1,11 @@
 #pragma once
 
-class RtConstructorWrapper : RtObject {
+#include "../RtObjects/RtObject.h"
+#include <cstdint>
+
+class RtConstructorWrapper final : RtObject {
 public:
-    RtConstructorWrapper(uint64_t* fn_address) {
+    explicit RtConstructorWrapper(uint64_t* fn_address) {
 
     }
 };

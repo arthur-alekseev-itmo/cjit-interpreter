@@ -1,4 +1,5 @@
 #pragma once
+#include "RtClosureWrapper.h"
 #include "../RtObjects/RtObject.h"
 
 class RtClassObject : RtObject {

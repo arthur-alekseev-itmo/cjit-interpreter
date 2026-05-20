@@ -8,6 +8,7 @@
 
 #include "../Parsing/Bytecode/Data/Instruction.h"
 #include "../Parsing/Bytecode/Data/Opcode.h"
+#include "../Runtime/RtBuiltins.h"
 #include "CnpPatcher.h"
 
 
@@ -15,7 +16,19 @@
 #define EXTRACT_ARGUMENT_VALUE(type, offset) (&bc_slice[ip + (offset)])
 #define EXTRACT_ARGUMENT_PTR(type, offset) CnpPatchValue(sizeof(type), reinterpret_cast<const uint8_t*>(&bc_slice[ip + (offset)]))
 #define COPY_AND_PATCH(...) CnpPatcher::patch((*stencils)[static_cast<std::size_t>(op)], function_ptr, function_offset, data_ptr, data_offset, {__VA_ARGS__})
-
+#define BUILTIN_ALIAS(builtin_index) {                                                              \
+    const auto fn_address = RtBuiltins::get_function(static_cast<std::size_t>(builtin_index));      \
+    COPY_AND_PATCH(CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address))); \
+    ADVANCE; \
+}
+#define BUILTIN_ALIAS_1ARG(builtin_index) {                                                         \
+    const auto fn_address = RtBuiltins::get_function(static_cast<std::size_t>(builtin_index));      \
+    COPY_AND_PATCH(                                                                                 \
+        EXTRACT_ARGUMENT_PTR(uint64_t, 1),                                                          \
+        CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address))              \
+    );                                                                                              \
+    ADVANCE;                                                                                        \
+}
 #if defined(__aarch64__)
     #define JUMP_SIZE 0
 #elif defined(__x86_64__)
@@ -57,15 +70,15 @@ namespace {
         std::vector<std::size_t> instruction_starts;
     };
 
-    function_layout calculate_layout(const Bytecode& bc, CnpStencilCollection* stencils) {
+    function_layout calculate_layout(const Bytecode* bc, CnpStencilCollection* stencils) {
         std::size_t instruction_size = 0;
         std::size_t data_section_size = 0;
         std::size_t ip = 0;
         auto instruction_starts = std::vector<std::size_t>();
 
-        const std::size_t bc_size = bc.size();
+        const std::size_t bc_size = bc->size();
         while (ip < bc_size) {
-            const auto op = static_cast<Opcode>(bc.data()[ip]);
+            const auto op = static_cast<Opcode>(bc->data()[ip]);
             const auto& stencil = (*stencils)[static_cast<std::size_t>(op)];
             for (const auto patch : stencil.patches) {
                 data_section_size += relocation_outer_size(patch);
@@ -131,7 +144,6 @@ namespace {
         case Opcode::DROP:
         case Opcode::SWAP:
         case Opcode::RETURN:
-        case Opcode::CALL_OBJECT:
         case Opcode::WRITE_TO_REF:
             COPY_AND_PATCH();
             ADVANCE;
@@ -160,14 +172,20 @@ namespace {
         case Opcode::CALL_BUILTIN:
             {
                 const auto builtin_index = *reinterpret_cast<const uint32_t*>(&bc_slice[ip + 1]);
-                assert(builtin_index < std::size(builtin_addresses));
-                const auto fn_address = builtin_addresses[builtin_index];
+                const auto fn_address = RtBuiltins::get_function(builtin_index);
                 COPY_AND_PATCH(CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address)));
-                ADVANCE;
+                ADVANCE; \
             }
-        // default:
-        //     // TODO:
-        //     throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));
+        case Opcode::NEW: throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));
+        case Opcode::GET_FIELD_REF: BUILTIN_ALIAS_1ARG(BuiltinIndex::GET_FIELD_REF);
+        case Opcode::GET_FIELD: BUILTIN_ALIAS_1ARG(BuiltinIndex::GET_FIELD);
+        case Opcode::BOX: BUILTIN_ALIAS_1ARG(BuiltinIndex::BOX);
+        case Opcode::UNBOX: BUILTIN_ALIAS(BuiltinIndex::UNBOX);
+        case Opcode::LOAD_CLASS: BUILTIN_ALIAS_1ARG(BuiltinIndex::LOAD_CLASS);
+        case Opcode::CALL_OBJECT: BUILTIN_ALIAS(BuiltinIndex::PREPARE_CALL_OBJECT);
+        default:
+            // TODO
+            throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));
         }
     }
 
@@ -175,15 +193,15 @@ namespace {
         uint8_t* code_ptr,
         uint8_t* data_ptr,
         const CnpStencilCollection* stencils,
-        const Bytecode& bc,
+        const Bytecode* bc,
         const std::vector<std::size_t>& instruction_starts
     ) {
         std::size_t function_offset = 0;
         std::size_t data_offset = 0;
 
-        for (std::size_t ip = 0; ip < bc.size();) {
+        for (std::size_t ip = 0; ip < bc->size();) {
             apply_bytecode_instruction(
-                bc.data(),
+                bc->data(),
                 ip,
                 code_ptr,
                 function_offset,
@@ -196,29 +214,38 @@ namespace {
     }
 }
 
-CnpFunction CnpCodegen::compile(const Bytecode& bc, CnpStencilCollection* stencils)
+const CnpFunction* CodegenResult::get_function() const {
+    return function_.get();
+}
+
+const uint8_t* CodegenResult::get_instruction_address(uint32_t instruction_index) const {
+    const auto origin = function_->function_ptr();
+    return origin + relative_instruction_addresses_[instruction_index];
+}
+
+CodegenResult CnpCodegen::compile(const Bytecode* bc, CnpStencilCollection* stencils)
 {
-    const auto [
+    auto [
         data_section_size,
         instructions_size,
         instruction_starts
     ] = calculate_layout(bc, stencils);
 
-    const auto function = CnpFunction(data_section_size, instructions_size);
+    auto function = std::make_unique<CnpFunction>(data_section_size, instructions_size);
 
     auto il = InstructionList(bc);
     std::size_t i = 0;
     for (const auto& instruction : il) {
-        VLOG_S(1) << i << " " << reinterpret_cast<void*>(function.function_ptr() + instruction_starts[i++]) << " " << instruction;
+        VLOG_S(1) << i << " " << reinterpret_cast<void*>(function->function_ptr() + instruction_starts[i++]) << " " << instruction;
     }
 
     cnp_compile(
-        function.function_ptr(),
-        function.data_ptr(),
+        function->function_ptr(),
+        function->data_ptr(),
         stencils,
         bc,
         instruction_starts
     );
 
-    return function;
+    return CodegenResult(std::move(function), instruction_starts);
 }
