@@ -1,6 +1,6 @@
 #pragma once
 #include "../Parsing/Stencil/Data/CnpStencilCollection.h"
-#include "../../Parsing/BytecodeFile/Data/Bytecode.h"
+#include "../Parsing/Bytecode/Data/Bytecode.h"
 
 class CnpInterpreter {
 public:

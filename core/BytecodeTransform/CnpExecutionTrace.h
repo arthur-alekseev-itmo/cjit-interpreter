@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "../../Parsing/BytecodeFile/Data/Bytecode.h"
 
 class Bytecode;
 

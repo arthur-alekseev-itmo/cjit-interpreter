@@ -1,4 +1,4 @@
-#include "../cnp/execution/CnpInterpreter.h"
+#include "CnpInterpreter.h"
 
 #include <iostream>
 

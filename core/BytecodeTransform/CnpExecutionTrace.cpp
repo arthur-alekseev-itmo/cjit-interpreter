@@ -1,10 +1,11 @@
 
-#include "../cnp/debug/CnpExecutionTrace.h"
+#include "CnpExecutionTrace.h"
 
 #include <cstddef>
 #include <iostream>
 
-#include "../../Parsing/BytecodeFile/Data/Opcode.h"
+#include "../Parsing/Bytecode/Data/Opcode.h"
+#include "../Parsing/Bytecode/Data/Bytecode.h"
 
 enum class Opcode : uint8_t;
 // I don't want to deal with C++ goofy method pointers etc
@@ -19,7 +20,6 @@ CnpExecutionTrace::CnpExecutionTrace(uint64_t* stack_base, uint64_t* locals_base
 
 void trace(const uint64_t* stack, const uint64_t* locals) {
     const uint64_t* stack_ptr = stack;
-    const uint64_t* locals_ptr = locals;
     if (stack_ptr - global_base_ > 1024) {
         std::cout << "STACK OVERFLOW" << std::endl;
         // This exact line will not throw but just cause Segfault
