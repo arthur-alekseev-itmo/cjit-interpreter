@@ -1,12 +1,12 @@
-#include "core/bytecode/io/BytecodeReader.h"
+#include "core/Parsing/BytecodeFile/IO/BytecodeReader.h"
 
 #include <cxxopts.hpp>
 #include <iostream>
 #include <loguru.hpp>
 
-#include "core/cnp/execution/CnpInterpreter.h"
-#include "core/cnp/stencil/CnpStencilFactory.h"
-#include "core/runtime/Runtime.h"
+#include "core/Execution/CnpInterpreter.h"
+#include "core/Parsing/Stencil/IO/CnpStencilFactory.h"
+#include "core/Runtime/Runtime.h"
 
 int main(int argc, char** argv) {
     cxxopts::Options options("CangJit-Interpreter", "Interpreter for Cangjie Bytecode");
