@@ -1,10 +1,11 @@
 #pragma once
-#include "RtClosureWrapper.h"
 #include "../RtObjects/RtObject.h"
 
 class RtClassObject : RtObject {
 public:
-    explicit RtClassObject(RtClass* klass) : RtObject(klass) {}
-
+    explicit RtClassObject(RtClass* klass) : RtObject(klass), representing_(klass) {}
     RtObject* get_member(uint32_t field_name) override;
+
+private:
+    RtClass* representing_;
 };

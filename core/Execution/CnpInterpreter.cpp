@@ -18,5 +18,7 @@ void CnpInterpreter::execute(const CodegenResult& bytecode, ConfiguredRuntime _)
     LOG_F(1, "stack pointer: %p\n", reinterpret_cast<void*>(stack_top));
     LOG_F(1, "local pointer: %p\n", reinterpret_cast<void*>(locals_top));
 
+    CnpExecutionTrace(stack_top, locals);
+
     bytecode.get_function()->call(stack_top, locals);
 }

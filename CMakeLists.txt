@@ -137,6 +137,8 @@ add_executable(cjit_interpreter main.cpp
         core/Runtime/Runtime.h
         core/Utils/utils.cpp
         core/Utils/utils.hpp
+        core/Runtime/RtWrappers/RtFunctionWrapper.cpp
+        core/Runtime/RtWrappers/RtFunctionWrapper.h
 )
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)

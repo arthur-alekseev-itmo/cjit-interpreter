@@ -14,6 +14,7 @@ public:
     ) : super_(std::move(super)), members_(std::move(members)) {}
 
     [[nodiscard]] const RtMember* get_member(uint32_t name) const;
+    [[nodiscard]] const RtMember* get_static_member(uint32_t name) const;
     [[nodiscard]] std::string get_name() const;
     [[nodiscard]] uint32_t get_field_count() const;
 
@@ -22,4 +23,5 @@ private:
     std::shared_ptr<RtClass> super_;
     std::vector<RtClass> interfaces_;
     std::unordered_map<uint32_t, RtMember> members_;
+    std::unordered_map<uint32_t, RtMember> static_members_;
 };

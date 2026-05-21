@@ -6,6 +6,18 @@
 
 #include "../Parsing/Bytecode/Data/Opcode.h"
 #include "../Parsing/Bytecode/Data/Bytecode.h"
+#include "../Parsing/Bytecode/Data/BytecodeFile.h"
+
+namespace {
+    void fix_member_offsets(CjClassEntry& entry) {
+        for (auto& member : entry.members) {
+            if (member.type == MemberType::FIELD) {
+                continue;
+            }
+            member.offset *= 2;
+        }
+    }
+}
 
 enum class Opcode : uint8_t;
 // I don't want to deal with C++ goofy method pointers etc
@@ -18,7 +30,7 @@ CnpExecutionTrace::CnpExecutionTrace(uint64_t* stack_base, uint64_t* locals_base
     global_locals_ = locals_base;
 }
 
-void trace(const uint64_t* stack, const uint64_t* locals) {
+uint64_t* trace(uint64_t* stack, const uint64_t* locals) {
     const uint64_t* stack_ptr = stack;
     if (stack_ptr - global_base_ > 1024) {
         std::cout << "STACK OVERFLOW" << std::endl;
@@ -31,20 +43,31 @@ void trace(const uint64_t* stack, const uint64_t* locals) {
         std::cout << " " << *(--stack_ptr);
     }
     std::cout << " ]" << std::endl;
+    return stack;
 }
 
-std::unique_ptr<Bytecode> CnpExecutionTrace::instrument(const Bytecode& bc) {
+void CnpExecutionTrace::instrument(BytecodeFile& bc) {
     auto result = std::vector<uint8_t>();
+    auto bytecode = bc.get_bytecode();
+    auto classes = bc.get_classes();
     auto trace_bytes = reinterpret_cast<uintptr_t>(&trace);
     const uint8_t debug_instruction[] = { static_cast<uint8_t>(Opcode::CALL_C_V_STACK_PTR), U64_TO_BYTES(trace_bytes) };
     std::size_t ip = 0;
 
-    while (ip < bc.size()) {
-        const auto op = static_cast<Opcode>(bc.data()[ip]);
+    // Fix indexes in classes: same logic as JUMP/CALL/FUNCTION_ADDRESS
+    for (auto& c : *classes) {
+        fix_member_offsets(c);
+    }
+
+    while (ip < bytecode->size()) {
+        const auto op = static_cast<Opcode>(bytecode->data()[ip]);
         const auto step = OpcodeUtils::size(op);
         for (unsigned char trace_byte : debug_instruction) {
             result.push_back(trace_byte);
         }
+        // Instructions with instruction location as an argument
+        // The argument needs to be shifted (multiplied by 2)
+        // Because before every instruction new one is inserted and indexes need to be changed
         switch (op) {
         case Opcode::JUMP:
         case Opcode::JUMP_TRUE:
@@ -52,9 +75,9 @@ std::unique_ptr<Bytecode> CnpExecutionTrace::instrument(const Bytecode& bc) {
         case Opcode::FUNCTION_ADDRESS:
         case Opcode::CALL:
             {
-                const auto fst_arg = *reinterpret_cast<const uint32_t*>(bc.data() + ip + 1);
+                const auto fst_arg = *reinterpret_cast<const uint32_t*>(bytecode->data() + ip + 1);
                 const auto doubled = fst_arg * 2;
-                result.push_back(bc.data()[ip]);
+                result.push_back(bytecode->data()[ip]);
                 for (std::size_t j = 0; j < sizeof(uint32_t); j++) {
                     result.push_back(*(reinterpret_cast<const uint8_t*>(&doubled) + j));
                 }
@@ -62,11 +85,11 @@ std::unique_ptr<Bytecode> CnpExecutionTrace::instrument(const Bytecode& bc) {
             }
         default:
             for (std::size_t j = 0; j < step; j++) {
-                result.push_back(bc.data()[ip + j]);
+                result.push_back(bytecode->data()[ip + j]);
             }
         }
         ip += step;
     }
 
-    return std::make_unique<Bytecode>(std::move(result));
+    *bc.get_bytecode() = Bytecode(result.data(), result.size());
 }

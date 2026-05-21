@@ -4,6 +4,7 @@
 #include <iostream>
 #include <loguru.hpp>
 
+#include "core/BytecodeTransform/CnpExecutionTrace.h"
 #include "core/Execution/CnpInterpreter.h"
 #include "core/Parsing/Stencil/IO/CnpStencilFactory.h"
 #include "core/Runtime/Runtime.h"
@@ -53,13 +54,13 @@ std::unique_ptr<BytecodeFile> parse_bytecode(const cxxopts::ParseResult &parse_r
     return BytecodeReader::read_file(parse_result["input"].as<std::string>());
 }
 
-void configure_trace(const cxxopts::ParseResult &parse_result) {
+void configure_trace(const cxxopts::ParseResult &parse_result, BytecodeFile &bytecode_file) {
     const auto trace = parse_result["trace"].count()
         ? parse_result["trace"].as<bool>()
         : false;
 
     if (trace) {
-        throw std::runtime_error("TODO");
+        CnpExecutionTrace::instrument(bytecode_file);
     }
 }
 
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
     configure_logging(result, argc, argv);
     const auto stencils = parse_stencils(result);
     const auto bytecode_file = parse_bytecode(result);
-    configure_trace(result);
+    configure_trace(result, *bytecode_file.get());
     const auto codegen_result = CnpCodegen::compile(bytecode_file->get_bytecode(), stencils.get());
     const auto configured_runtime = Runtime::build(bytecode_file.get(), &codegen_result);
 

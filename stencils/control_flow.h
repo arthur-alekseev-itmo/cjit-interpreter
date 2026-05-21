@@ -53,7 +53,6 @@ STENCIL_DECL(st_call) {
 }
 
 STENCIL_DECL(st_call_object) {
-    POP(object_address);
     // The object called might be a Closure or Constructor
     // When this happens, some stuff might be prepared, for instance
     // - Closure arguments placed on stack
@@ -62,13 +61,13 @@ STENCIL_DECL(st_call_object) {
     // This function will be patched here and will do this kind of dispatch
     // Function returns address to be called or null (on stack)
     // If it returns null, then no need to call. This can happen if closure is called without full argument array
-    uint64_t* (* STENCIL call_address)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (* STENCIL)(uint64_t*, uint64_t*));
-    stack_top = call_address(stack_top, locals);
+    uint64_t* (* STENCIL prepare_call)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (* STENCIL)(uint64_t*, uint64_t*));
+    stack_top = prepare_call(stack_top, locals);
 
     POP(function_address);
-    uint64_t* (* STENCIL target)(uint64_t*, uint64_t*) = (uint64_t* (* STENCIL)(uint64_t*, uint64_t*))function_address;
 
-    if (target != NULL) {
+    if ((void*)function_address != NULL) {
+        uint64_t* (* STENCIL target)(uint64_t*, uint64_t*) = (uint64_t* (* STENCIL)(uint64_t*, uint64_t*))function_address;
         stack_top = target(stack_top, locals + TODO_GOOD_LOCAL_COUNT);
     }
 

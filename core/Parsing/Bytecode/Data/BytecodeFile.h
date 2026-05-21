@@ -55,6 +55,10 @@ public:
         return bytecode_.get();
     }
 
+    [[nodiscard]] std::vector<CjClassEntry>* get_classes() {
+        return &classes_;
+    }
+
     [[nodiscard]] const std::vector<CjClassEntry>* get_classes() const {
         return &classes_;
     }

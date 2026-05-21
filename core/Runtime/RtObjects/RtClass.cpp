@@ -9,6 +9,13 @@ const RtMember* RtClass::get_member(const uint32_t name) const {
     return this->super_->get_member(name);
 }
 
+// TODO: Merge with get_member
+const RtMember* RtClass::get_static_member(uint32_t name) const {
+    if (this->members_.contains(name))
+        return &this->members_.at(name);
+    return this->super_->get_member(name);
+}
+
 std::string RtClass::get_name() const {
     return this->name_;
 }

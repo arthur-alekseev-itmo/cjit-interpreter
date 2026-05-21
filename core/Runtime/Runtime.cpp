@@ -5,7 +5,6 @@
 #include "../Parsing/Bytecode/Data/BytecodeFile.h"
 
 namespace {
-
     RtMember create_member(const CjMemberEntry member) {
         return RtMember(member.name, member.type, member.offset);
     }
@@ -45,7 +44,7 @@ namespace {
     std::vector<const uint8_t*> build_instruction_starts(std::size_t instruction_count, const CodegenResult* codegen_result) {
         auto result = std::vector<const uint8_t*>(instruction_count);
         for (std::size_t i = 0; i < instruction_count; i++) {
-            result.push_back(codegen_result->get_instruction_address(i));
+            result[i] = codegen_result->get_instruction_address(i);
         }
         return result;
     }

@@ -159,13 +159,20 @@ namespace {
                 const auto relative_jump_patch_addr = reinterpret_cast<const uint8_t*>(&relative_jump);
                 const auto absolute_jump = function_ptr + jump_addr;
                 const auto absolute_jump_patch_addr = reinterpret_cast<const uint8_t*>(&absolute_jump);
+                const auto prepare_fun = RtBuiltins::get_function(BuiltinIndex::WRAP_FUN_ADDRESS);
 
                 if (is_relative_jump(stencils->operator[](static_cast<std::size_t>(op)).patches[0])) {
                     // Relative
-                    COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), relative_jump_patch_addr ));
+                    COPY_AND_PATCH(
+                        CnpPatchValue(sizeof(intptr_t), relative_jump_patch_addr),
+                        CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&prepare_fun))
+                    );
                 } else {
                     // Absolute
-                    COPY_AND_PATCH(CnpPatchValue(sizeof(uint64_t), absolute_jump_patch_addr ));
+                    COPY_AND_PATCH(
+                        CnpPatchValue(sizeof(intptr_t), absolute_jump_patch_addr),
+                        CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&prepare_fun))
+                    );
                 }
                 ADVANCE;
             }
