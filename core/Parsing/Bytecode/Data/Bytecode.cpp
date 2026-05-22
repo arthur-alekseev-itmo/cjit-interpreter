@@ -1,7 +1,3 @@
-//
-// Created by Arthur Alekseev on 26.03.2026.
-//
-
 #include "Bytecode.h"
 
 #include <cstring>
