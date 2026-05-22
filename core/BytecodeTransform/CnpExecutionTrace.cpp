@@ -40,7 +40,12 @@ uint64_t* trace(uint64_t* stack, const uint64_t* locals) {
 
     std::cout << global_current_instruction_idx_++ << " [";
     while (stack_ptr > global_base_) {
-        std::cout << " " << *(--stack_ptr);
+        const auto value = *(--stack_ptr);
+        if (value > 100000) {
+            std::cout << " " << reinterpret_cast<void*>(value);
+        } else {
+            std::cout << " " << value;
+        }
     }
     std::cout << " ]" << std::endl;
     return stack;

@@ -9,6 +9,11 @@ public:
         const uint32_t function_offset
     ) : function_offset_(Runtime::instruction_start(function_offset)) { }
 
+    RtClosureWrapper(
+        const uint32_t function_offset,
+        const RtObject* first_arg
+    ) : function_offset_(Runtime::instruction_start(function_offset)), arguments_(std::vector<const RtObject*>(1, first_arg)){ }
+
     void add_argument(RtObject* arg);
     ObjectKind get_kind() override;
     RtObject* get_member(uint32_t field_name) override;

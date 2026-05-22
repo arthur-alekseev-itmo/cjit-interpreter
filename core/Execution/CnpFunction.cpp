@@ -44,6 +44,7 @@ std::uint64_t* CnpFunction::call(std::uint64_t* stack_top, std::uint64_t* locals
         perror("Failed to create executable memory (m protect)");
     }
 
+    // God bless you debugging this exact line
     return this->function_ptr_(stack_top, locals);
 }
 

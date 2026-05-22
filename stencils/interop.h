@@ -22,7 +22,7 @@ STENCIL_DECL(st_call_c_v_stack_ptr) {
 STENCIL_DECL(st_call_builtin) {
     // Builtins are functions that take args from stack themselves, no need to check arity
     // Resolved in codegen, address of builtin is placed in data section, then this address is set to this hole
-    uint64_t* (* builtin)(uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (*)(uint64_t*));
-    stack_top = builtin(stack_top);
+    uint64_t* (* builtin)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (*)(uint64_t*, uint64_t*));
+    stack_top = builtin(stack_top, locals);
     STENCIL_END
 }

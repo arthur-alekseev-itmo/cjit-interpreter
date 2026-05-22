@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "loguru.hpp"
 #include "Runtime.h"
 #include "RtWrappers/RtClassObject.h"
 #include "RtWrappers/RtClosureWrapper.h"
@@ -22,7 +23,9 @@ BUILTIN_IMPL(print_int) {
 
 BUILTIN_IMPL(wrap_function_address) {
     POP(address);
-    PUSH(new RtFunctionWrapper(reinterpret_cast<uint8_t*>(address)));
+    const auto wrapper = new RtFunctionWrapper(reinterpret_cast<uint8_t*>(address));
+    PUSH(wrapper);
+    VLOG_F(1, "Wrapped function address: %llu at: %p", address, wrapper);
     return stack_top;
 }
 
@@ -31,6 +34,7 @@ BUILTIN_IMPL(load_class) {
     const auto klass = Runtime::hierarchy()->get_class(class_idx);
     const auto wrapper = new RtClassObject(klass);
     PUSH(wrapper);
+    VLOG_F(1, "Loaded class: %llu at: %p", class_idx, wrapper);
     return stack_top;
 }
 
@@ -40,17 +44,24 @@ BUILTIN_IMPL(get_field) {
     const auto object = reinterpret_cast<RtObject*>(raw_object);
     const auto member = object->get_member(field_idx);
     PUSH(member);
+    VLOG_F(1, "Got field %llu of %p --> %p", field_idx, object, member);
     return stack_top;
 }
 
 BUILTIN_IMPL(get_field_ref) {
-    throw std::runtime_error("TODO");
+    POP(field_idx);
+    POP(raw_object);
+    const auto object = reinterpret_cast<RtObject*>(raw_object);
+    auto ref = object->get_member_ref(field_idx);
+    VLOG_F(1, "Getting ref member %llu of %p --> %p", field_idx, object, ref);
+    PUSH(ref);
+    return stack_top;
 }
 
 BUILTIN_IMPL(prepare_call_object) {
-    // TODO: WHY IS LOCALS BROKEN?
     POP(raw_object);
     const auto object = reinterpret_cast<RtObject*>(raw_object);
+    VLOG_F(1, "Calling object: %p", object);
     switch (object->get_kind()) {
     case KIND_OBJECT: throw std::runtime_error("Cannot call an object");
     case KIND_CLOSURE: {
@@ -63,15 +74,17 @@ BUILTIN_IMPL(prepare_call_object) {
         }
     case KIND_FUNCTION: {
             const auto function = reinterpret_cast<RtFunctionWrapper*>(object);
-            PUSH(function->get_function_address());
+            const auto address = function->get_function_address();
+            PUSH(address);
+            VLOG_F(1., "Unpacked function wrapper (%p) --> %p", function, address);
             return stack_top;
         }
     case KIND_CTOR: {
             const auto ctor = reinterpret_cast<RtConstructorWrapper*>(object);
             const auto new_instance = new RtObject(ctor->get_constructed_class());
             PUSH(new_instance);
-            PUSH(new_instance);
             PUSH(ctor->get_function());
+            VLOG_F(1, "Constructor call (%p), new instance is: %p", ctor, new_instance);
             return stack_top;
         }
     }
