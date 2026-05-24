@@ -10,14 +10,14 @@
 #include "RtWrappers/RtClosureWrapper.h"
 #include "RtWrappers/RtConstructorWrapper.h"
 #include "RtWrappers/RtFunctionWrapper.h"
+#include "RtWrappers/RtPrimitiveWrappers/RtIntWrapper.h"
+#include "RtWrappers/RtPrimitiveWrappers/RtWrapperTypes.h"
 
-#define BUILTIN_IMPL(name) uint64_t* name(uint64_t* stack_top, uint64_t* locals)
-#define POP(name) const uint64_t name = *(--stack_top)
-#define PUSH(value) *stack_top++ = (int64_t)(value)
-
-BUILTIN_IMPL(print_int) {
-    const uint64_t value = *(--stack_top);
-    std::cout << value << std::endl;
+BUILTIN_IMPL(print_int)
+{
+    const uint64_t raw_value = *(--stack_top);
+    const auto object = reinterpret_cast<RtIntWrapper*>(raw_value);
+    std::cout << *object->get_wrapped_value_addr() << std::endl;
     return stack_top;
 }
 
@@ -96,7 +96,24 @@ BUILTIN_IMPL(unbox) {
 }
 
 BUILTIN_IMPL(box) {
-    throw std::runtime_error("TODO");
+    POP(wrapper_ty_id);
+    POP(target);
+    switch (wrapper_ty_id) {
+    case RtWrapperType::IntWrapper: {
+            const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
+            VLOG_F(1, "Boxing an integer %llu, result is: %p", target, wrapper);
+            PUSH(wrapper);
+            return stack_top;
+        }
+    case RtWrapperType::BoolWrapper: {
+            const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
+            VLOG_F(1, "Boxing an integer %llu, result is: %p", target, wrapper);
+            PUSH(wrapper);
+            return stack_top;
+        }
+    case RtWrapperType::FloatWrapper: throw std::runtime_error("TODO");
+    default: throw std::runtime_error("TODO");
+    }
 }
 
 uintptr_t RtBuiltins::get_function(uint32_t index) {

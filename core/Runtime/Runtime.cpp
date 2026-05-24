@@ -41,10 +41,10 @@ namespace {
         return rt_class;
     }
 
-    std::vector<const uint8_t*> build_instruction_starts(std::size_t instruction_count, const CodegenResult* codegen_result) {
-        auto result = std::vector<const uint8_t*>(instruction_count);
+    std::vector<uintptr_t> build_instruction_starts(std::size_t instruction_count, const CodegenResult* codegen_result) {
+        auto result = std::vector<uintptr_t>(instruction_count);
         for (std::size_t i = 0; i < instruction_count; i++) {
-            result[i] = codegen_result->get_instruction_address(i);
+            result[i] = reinterpret_cast<uintptr_t>(codegen_result->get_instruction_address(i));
         }
         return result;
     }
@@ -73,9 +73,9 @@ ConfiguredRuntime Runtime::build(const BytecodeFile* file, const CodegenResult* 
     return {};
 }
 
-const uint8_t* Runtime::instruction_start(std::size_t index) {
+const uintptr_t Runtime::instruction_start(std::size_t index) {
     return instruction_starts_[index];
 }
 
 std::unique_ptr<RtClassHierarchy> Runtime::hierarchy_ = nullptr;
-std::vector<const uint8_t*> Runtime::instruction_starts_ = {};
+std::vector<uintptr_t> Runtime::instruction_starts_ = {};

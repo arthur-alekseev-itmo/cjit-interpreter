@@ -19,8 +19,8 @@ RtObject* RtClosureWrapper::get_member(uint32_t field_name) {
     return nullptr;
 }
 
-const uint8_t* RtClosureWrapper::get_function() const {
-    assert(function_offset_ != nullptr);
+const uintptr_t RtClosureWrapper::get_function() const {
+    assert(function_offset_ != 0);
     return this->function_offset_;
 }
 

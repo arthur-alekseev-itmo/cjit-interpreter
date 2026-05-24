@@ -1,10 +1,8 @@
 #pragma once
 #include <cstdint>
 
+#include "MacroForBuiltins.h"
 #include "RtClassHierarchy.h"
-
-#define BUILTIN_DEF(name) extern "C" uint64_t* name(uint64_t* stack_top, uint64_t* locals)
-#define BUILTIN_ADDRESS(name) reinterpret_cast<uintptr_t>(&name)
 
 BUILTIN_DEF(print_int);
 BUILTIN_DEF(prepare_call_object);

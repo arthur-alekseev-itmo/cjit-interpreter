@@ -14,10 +14,10 @@ public:
 
     ObjectKind get_kind() override;
 
-    const RtClass* get_constructed_class() const;
-    const uint8_t* get_function() const;
+    [[nodiscard]] const RtClass* get_constructed_class() const;
+    [[nodiscard]] const uintptr_t get_function() const;
 
 private:
-    const uint8_t* function_address_;
+    const uintptr_t function_address_;
     const RtClass* constructed_class_;
 };

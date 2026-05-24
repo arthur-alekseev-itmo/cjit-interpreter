@@ -6,22 +6,22 @@
 class RtClosureWrapper final : public RtObject {
 public:
     explicit RtClosureWrapper(
-        const uint32_t function_offset
-    ) : function_offset_(Runtime::instruction_start(function_offset)) { }
+        const uintptr_t function_offset
+    ) : function_offset_(function_offset) { }
 
     RtClosureWrapper(
-        const uint32_t function_offset,
+        const uintptr_t function_offset,
         const RtObject* first_arg
-    ) : function_offset_(Runtime::instruction_start(function_offset)), arguments_(std::vector<const RtObject*>(1, first_arg)){ }
+    ) : function_offset_(function_offset), arguments_(std::vector(1, first_arg)){ }
 
     void add_argument(RtObject* arg);
     ObjectKind get_kind() override;
     RtObject* get_member(uint32_t field_name) override;
 
-    [[nodiscard]] const uint8_t* get_function() const;
+    [[nodiscard]] const uintptr_t get_function() const;
     [[nodiscard]] const std::vector<const RtObject*> get_arguments() const;
 
 private:
-    const uint8_t* function_offset_;
+    const uintptr_t function_offset_;
     std::vector<const RtObject*> arguments_;
 };

@@ -8,6 +8,6 @@ const RtClass* RtConstructorWrapper::get_constructed_class() const {
     return constructed_class_;
 }
 
-const uint8_t* RtConstructorWrapper::get_function() const {
+const uintptr_t RtConstructorWrapper::get_function() const {
     return function_address_;
 }
