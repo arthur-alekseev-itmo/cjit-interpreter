@@ -18,7 +18,6 @@ BUILTIN_IMPL(print_int)
     const uint64_t raw_value = *(--stack_top);
     const auto object = reinterpret_cast<RtIntWrapper*>(raw_value);
     std::cout << *object->get_wrapped_value_addr() << std::endl;
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
@@ -27,7 +26,6 @@ BUILTIN_IMPL(wrap_function_address) {
     const auto wrapper = new RtFunctionWrapper(reinterpret_cast<uint8_t*>(address));
     PUSH(wrapper);
     VLOG_F(1, "Wrapped function address: %llu at: %p", address, wrapper);
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
@@ -37,7 +35,6 @@ BUILTIN_IMPL(load_class) {
     const auto wrapper = new RtClassObject(klass);
     PUSH(wrapper);
     VLOG_F(1, "Loaded class: %llu at: %p", class_idx, wrapper);
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
@@ -48,7 +45,6 @@ BUILTIN_IMPL(get_field) {
     const auto member = object->get_member(field_idx);
     PUSH(member);
     VLOG_F(1, "Got field %llu of %p --> %p", field_idx, object, member);
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
@@ -59,12 +55,10 @@ BUILTIN_IMPL(get_field_ref) {
     auto ref = object->get_member_ref(field_idx);
     VLOG_F(1, "Getting ref member %llu of %p --> %p", field_idx, object, ref);
     PUSH(ref);
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
 BUILTIN_IMPL(prepare_call_object) {
-    VLOG_F(1, "Stack_top before pco: %p", stack_top);
     POP(raw_object);
     const auto object = reinterpret_cast<RtObject*>(raw_object);
     VLOG_F(1, "Calling object: %p", object);
@@ -77,7 +71,6 @@ BUILTIN_IMPL(prepare_call_object) {
                 PUSH(arg);
             }
             PUSH(closure->get_function());
-            VLOG_F(1, "Stack_top: %p", stack_top);
             return stack_top;
         }
     case KIND_FUNCTION: {
@@ -85,7 +78,6 @@ BUILTIN_IMPL(prepare_call_object) {
             const auto address = function->get_function_address();
             PUSH(address);
             VLOG_F(1, "Unpacked function wrapper (%p) --> %p", function, address);
-            VLOG_F(1, "Stack_top: %p", stack_top);
             return stack_top;
         }
     case KIND_CTOR: {
@@ -94,7 +86,6 @@ BUILTIN_IMPL(prepare_call_object) {
             PUSH(new_instance);
             PUSH(ctor->get_function());
             VLOG_F(1, "Constructor call (%p), new instance is: %p", ctor, new_instance);
-            VLOG_F(1, "Stack_top: %p", stack_top);
             return stack_top;
         }
     }
@@ -105,7 +96,6 @@ BUILTIN_IMPL(unbox) {
     POP(raw_object);
     const auto object = reinterpret_cast<RtIntWrapper*>(raw_object);
     PUSH(*object->get_wrapped_value_addr());
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
@@ -117,14 +107,13 @@ BUILTIN_IMPL(box) {
             const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
             VLOG_F(1, "Boxing an integer %llu, result is: %p", target, wrapper);
             PUSH(wrapper);
-            VLOG_F(1, "Stack_top: %p", stack_top);
+            
             return stack_top;
         }
     case RtWrapperType::BoolWrapper: {
             const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
             VLOG_F(1, "Boxing a boolean %llu, result is: %p", target, wrapper);
             PUSH(wrapper);
-            VLOG_F(1, "Stack_top: %p", stack_top);
             return stack_top;
         }
     case RtWrapperType::FloatWrapper: throw std::runtime_error("TODO");
@@ -142,7 +131,6 @@ BUILTIN_IMPL(cast) {
     VLOG_F(1, "Casting %p from %d to %llu", reinterpret_cast<void*>(obj), obj->get_class()->get_id(), class_id);
     obj->cast_to(klass);
     PUSH(obj);
-    VLOG_F(1, "Stack_top: %p", stack_top);
     return stack_top;
 }
 
