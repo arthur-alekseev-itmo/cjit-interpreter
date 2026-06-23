@@ -12,6 +12,7 @@ BUILTIN_DEF(load_class);
 BUILTIN_DEF(box);
 BUILTIN_DEF(unbox);
 BUILTIN_DEF(wrap_function_address);
+BUILTIN_DEF(cast);
 
 enum BuiltinIndex : uint8_t {
     PRINT_INT = 0,
@@ -22,6 +23,7 @@ enum BuiltinIndex : uint8_t {
     BOX = 5,
     UNBOX = 6,
     WRAP_FUN_ADDRESS = 7,
+    CAST = 8,
 
     BUILTINS_COUNT
 };
@@ -34,7 +36,8 @@ inline static uintptr_t builtin_addresses[] = {
     BUILTIN_ADDRESS(load_class),
     BUILTIN_ADDRESS(box),
     BUILTIN_ADDRESS(unbox),
-    BUILTIN_ADDRESS(wrap_function_address)
+    BUILTIN_ADDRESS(wrap_function_address),
+    BUILTIN_ADDRESS(cast)
 };
 
 class RtBuiltins {

@@ -14,6 +14,8 @@ enum BytecodeOperatorNames : uint32_t {
     OPERATOR_GT = 10,
     OPERATOR_GE = 11,
     OPERATOR_NEQ = 12,
+    OPERATOR_UNARY_NEGATE = 13,
+    OPERATOR_UNARY_NOT = 14
 };
 
 class RtPrimitiveWrapper : public RtObject {

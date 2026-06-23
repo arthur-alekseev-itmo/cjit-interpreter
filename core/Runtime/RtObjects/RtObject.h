@@ -29,6 +29,10 @@ public:
 
     RtObject() : class_(nullptr) {}
 
+    void cast_to(const RtClass* klass);
+
+    [[nodiscard]] const RtClass* get_class() const;
+
 private:
     const RtClass* class_;
     std::vector<RtObject*> data_;

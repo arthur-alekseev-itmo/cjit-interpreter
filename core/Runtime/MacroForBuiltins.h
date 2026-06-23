@@ -18,3 +18,9 @@
     PUSH(new RtIntWrapper(unwrapped));                                               \
     return stack_top;                                                                \
 }
+
+#define TYPED_MATH_UNARY_OPERATOR_WITH_UNBOX(name, op, type) BUILTIN_DEF(name) { \
+    POP(a);                                                                      \
+    PUSH(new RtIntWrapper(op(reinterpret_cast<type>(a))));                       \
+    return stack_top;                                                            \
+}

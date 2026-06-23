@@ -20,6 +20,10 @@ std::string RtClass::get_name() const {
     return this->name_;
 }
 
+uint32_t RtClass::get_id() const {
+    return id_;
+}
+
 uint32_t RtClass::get_field_count() const {
     // TODO:
     return 32;

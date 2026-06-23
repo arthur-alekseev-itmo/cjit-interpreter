@@ -61,7 +61,7 @@ STENCIL_DECL(st_call_object) {
     // This function will be patched here and will do this kind of dispatch
     // Function returns address to be called or null (on stack)
     // If it returns null, then no need to call. This can happen if closure is called without full argument array
-    uint64_t* (* STENCIL prepare_call)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (* STENCIL)(uint64_t*, uint64_t*));
+    uint64_t* (* prepare_call)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(uint64_t* (*)(uint64_t*, uint64_t*));
     stack_top = prepare_call(stack_top, locals);
 
     POP(function_address);

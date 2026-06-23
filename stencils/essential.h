@@ -49,8 +49,14 @@ __attribute__((musttail)) return stencil_output(stack_top, locals);
     __asm__ volatile("ldp x19, x20, [sp, #0]\n ldp x21, x22, [sp, #16]\n add sp, sp, #32\n" ::: "memory")
     // __asm__ volatile("popq %%rdi; popq %%rsi;" ::: "memory")
 
-#define CALL_BUILTIN_RENAMED(name) STENCIL_DECL(name) {                                                   \
+#define CALL_BUILTIN_RENAMED_1ARG(name) STENCIL_DECL(name) {                                              \
     PUSH(STENCIL_HOLE_32_1(uint64_t));                                                                    \
+    uint64_t* (* builtin)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_2(uint64_t* (*)(uint64_t*, uint64_t*)); \
+    stack_top = builtin(stack_top, locals);                                                               \
+    STENCIL_END                                                                                           \
+}
+
+#define CALL_BUILTIN_RENAMED(name) STENCIL_DECL(name) {                                                   \
     uint64_t* (* builtin)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_2(uint64_t* (*)(uint64_t*, uint64_t*)); \
     stack_top = builtin(stack_top, locals);                                                               \
     STENCIL_END                                                                                           \

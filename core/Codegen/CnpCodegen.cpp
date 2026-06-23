@@ -190,6 +190,7 @@ namespace {
         case Opcode::UNBOX: BUILTIN_ALIAS(BuiltinIndex::UNBOX);
         case Opcode::LOAD_CLASS: BUILTIN_ALIAS_1ARG(BuiltinIndex::LOAD_CLASS);
         case Opcode::CALL_OBJECT: BUILTIN_ALIAS(BuiltinIndex::PREPARE_CALL_OBJECT);
+        case Opcode::CAST: BUILTIN_ALIAS_1ARG(BuiltinIndex::CAST)
         default:
             // TODO
             throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));

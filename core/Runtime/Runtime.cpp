@@ -35,7 +35,7 @@ namespace {
             cls->super == 0 ? nullptr
             : add_class_to_hierarchy(cls->super, class_table, hierarchy);
 
-        const auto rt_class = std::make_shared<RtClass>(super, members);
+        const auto rt_class = std::make_shared<RtClass>(name, super, members);
         hierarchy[name] = rt_class;
 
         return rt_class;

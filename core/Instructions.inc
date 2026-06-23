@@ -60,4 +60,5 @@ DEF_INSTR(GET_FIELD,         "GET_FIELD",         ARGS_UI32,     "st_get_field",
 DEF_INSTR(BOX,               "BOX",               ARGS_UI32,     "st_box",                TRIM_END)
 DEF_INSTR(UNBOX,             "UNBOX",             ARGS_NONE,     "st_unbox",              TRIM_END)
 DEF_INSTR(LOAD_CLASS,        "LOAD_CLASS",        ARGS_UI32,     "st_load_class",         TRIM_END)
-
+DEF_INSTR(CALL_NO_NEW,       "CALL_NO_NEW",       ARGS_NONE,     "st_call_no_new",        TRIM_END)
+DEF_INSTR(CAST,              "CAST",              ARGS_UI32,     "st_cast",               TRIM_END)

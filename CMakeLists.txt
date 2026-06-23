@@ -145,7 +145,6 @@ add_executable(cjit_interpreter main.cpp
         core/Runtime/RtWrappers/RtPrimitiveWrappers/RtWrapperTypes.h
         core/Runtime/RtWrappers/RtPrimitiveWrappers/RtPrimitiveWrapper.cpp
         core/Runtime/RtWrappers/RtPrimitiveWrappers/RtPrimitiveWrapper.h
-        core/Runtime/RtObjects/MacroForBuiltins.h
 )
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)

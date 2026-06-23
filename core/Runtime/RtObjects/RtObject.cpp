@@ -26,3 +26,11 @@ RtObject** RtObject::get_member_ref(uint32_t field_name) {
 ObjectKind RtObject::get_kind() {
     return KIND_OBJECT;
 }
+
+void RtObject::cast_to(const RtClass* klass) {
+    class_ = klass;
+}
+
+const RtClass* RtObject::get_class() const {
+    return class_;
+}
