@@ -7,7 +7,9 @@
 enum class MemberType : uint32_t {
     FIELD = 0x1,
     METHOD = 0x2,
-    CONSTRUCTOR = 0x4
+    CONSTRUCTOR = 0x3,
+    STATIC_METHOD = 0x4,
+    STATIC_FIELD = 0x5
 };
 
 struct CjMemberEntry {

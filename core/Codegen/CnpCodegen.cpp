@@ -183,7 +183,8 @@ namespace {
                 COPY_AND_PATCH(CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address)));
                 ADVANCE; \
             }
-        case Opcode::NEW: throw std::runtime_error("Opcode to be supported: " + OpcodeUtils::to_string(op));
+        case Opcode::NEW: BUILTIN_ALIAS_1ARG(BuiltinIndex::NEW);
+        case Opcode::INIT: BUILTIN_ALIAS(BuiltinIndex::INIT)
         case Opcode::GET_FIELD_REF: BUILTIN_ALIAS_1ARG(BuiltinIndex::GET_FIELD_REF);
         case Opcode::GET_FIELD: BUILTIN_ALIAS_1ARG(BuiltinIndex::GET_FIELD);
         case Opcode::BOX: BUILTIN_ALIAS_1ARG(BuiltinIndex::BOX);

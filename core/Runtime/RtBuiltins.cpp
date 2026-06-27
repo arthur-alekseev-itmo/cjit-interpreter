@@ -134,6 +134,30 @@ BUILTIN_IMPL(cast) {
     return stack_top;
 }
 
+BUILTIN_IMPL(new_object) {
+    POP(class_id);
+    const auto klass = Runtime::hierarchy()->get_class(class_id);
+    const auto object = new RtObject(klass);
+    VLOG_F(1, "Creating new object via NEW of type %llu, instance: %p", class_id, object);
+    PUSH(object);
+    return stack_top;
+}
+
+// Calls all the $clinits (hash=15)
+BUILTIN_IMPL(init) {
+    using FuncType = uint64_t* (__attribute__((preserve_none)) *)(uint64_t*, uint64_t*);
+    for (auto &klass : Runtime::hierarchy()->get_classes()) {
+        VLOG_F(1, "Initializing class: %d", klass->get_id());
+        const auto class_object = new RtClassObject(klass);
+        PUSH(class_object);
+        const auto clinit_method = klass->get_member(15);
+        const auto func_offset = Runtime::instruction_start(clinit_method->offset);
+        const auto func = reinterpret_cast<FuncType>(func_offset);
+        func(stack_top, locals);
+    }
+    return stack_top;
+}
+
 uintptr_t RtBuiltins::get_function(uint32_t index) {
     if (index >= BUILTINS_COUNT) {
         throw std::runtime_error("Trying to access bad builtin: " + std::to_string(index));
