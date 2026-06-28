@@ -1,11 +1,15 @@
 #include "RtClass.h"
 
+#include <cassert>
+#include <iostream>
+
 const RtMember* RtClass::get_member(const uint32_t name) const {
     if (this->members_.contains(name)) {
         return &this->members_.at(name);
     }
 
     // TODO: Search in interfaces then
+    assert(this->super_ != nullptr);
     return this->super_->get_member(name);
 }
 

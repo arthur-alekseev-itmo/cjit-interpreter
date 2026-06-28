@@ -36,7 +36,7 @@ RtObject* RtIntWrapper::get_member(uint32_t field_name) {
     case OPERATOR_NEQ : RETURN_APPLIED_FUNCTION(int_neq);
     case OPERATOR_UNARY_NEGATE : RETURN_APPLIED_FUNCTION(int_ng);
     case OPERATOR_UNARY_NOT : RETURN_APPLIED_FUNCTION(int_not);
-    default: throw std::runtime_error("Unknwon function call on int wrapper");
+    default: throw std::runtime_error("Unknown function call on int wrapper");
     }
 }
 

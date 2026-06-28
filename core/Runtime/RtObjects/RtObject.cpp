@@ -34,3 +34,7 @@ void RtObject::cast_to(const RtClass* klass) {
 const RtClass* RtObject::get_class() const {
     return class_;
 }
+
+std::vector<RtObject*> RtObject::get_data() const {
+    return data_;
+}

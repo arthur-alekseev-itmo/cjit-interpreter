@@ -128,9 +128,9 @@ BUILTIN_IMPL(cast) {
     POP(raw_target);
     const auto klass = Runtime::hierarchy()->get_class(class_id);
     const auto obj = reinterpret_cast<RtObject*>(raw_target);
-    VLOG_F(1, "Casting %p from %d to %llu", reinterpret_cast<void*>(obj), obj->get_class()->get_id(), class_id);
-    obj->cast_to(klass);
-    PUSH(obj);
+    const auto result = new RtObject(klass, obj->get_data());
+    PUSH(result);
+    VLOG_F(1, "Casting %p from %d to %llu, result is: %p", reinterpret_cast<void*>(obj), obj->get_class()->get_id(), class_id, result);
     return stack_top;
 }
 
@@ -154,6 +154,7 @@ BUILTIN_IMPL(init) {
         const auto func_offset = Runtime::instruction_start(clinit_method->offset);
         const auto func = reinterpret_cast<FuncType>(func_offset);
         func(stack_top, locals);
+        POP(_);
     }
     return stack_top;
 }

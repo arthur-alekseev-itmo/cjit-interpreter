@@ -32,6 +32,7 @@ public:
     void cast_to(const RtClass* klass);
 
     [[nodiscard]] const RtClass* get_class() const;
+    [[nodiscard]] std::vector<RtObject*> get_data() const;
 
 private:
     const RtClass* class_;
