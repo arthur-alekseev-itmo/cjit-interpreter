@@ -20,21 +20,21 @@ public:
 
     RtObject(
         const RtClass* klass,
-        std::vector<RtObject*> data
+        std::shared_ptr<std::vector<RtObject*>> data
     ) : class_(klass), data_(std::move(data)) {}
 
     explicit RtObject(
         const RtClass* klass
-    ) : class_(klass), data_(std::vector<RtObject*>(klass->get_field_count())) {}
+    ) : class_(klass), data_(std::make_shared<std::vector<RtObject*>>(klass->get_field_count())) {}
 
     RtObject() : class_(nullptr) {}
 
     void cast_to(const RtClass* klass);
 
     [[nodiscard]] const RtClass* get_class() const;
-    [[nodiscard]] std::vector<RtObject*> get_data() const;
+    [[nodiscard]] std::shared_ptr<std::vector<RtObject*>> get_data() const;
 
 private:
     const RtClass* class_;
-    std::vector<RtObject*> data_;
+    std::shared_ptr<std::vector<RtObject*>> data_;
 };
