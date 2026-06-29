@@ -10,7 +10,7 @@ RtObject* RtClassObject::get_member(uint32_t field_name) {
     switch (member->type) {
         case MemberType::CONSTRUCTOR: return new RtConstructorWrapper(member->offset, representing_);
         case MemberType::STATIC_FIELD: return representing_->get_static_field(member->offset);
-        case MemberType::STATIC_METHOD: return new RtClosureWrapper(Runtime::instruction_start(member->offset));
+        case MemberType::STATIC_METHOD: return new RtClosureWrapper(Runtime::instruction_start(member->offset), this);
         default: throw std::runtime_error("Error: accessing non-static method or fields from class object");
     }
 }
