@@ -1,11 +1,68 @@
-#include "core/bytecode/io/BytecodeReader.h"
+#include "core/Parsing/Bytecode/IO/BytecodeReader.h"
 
 #include <cxxopts.hpp>
 #include <iostream>
 #include <loguru.hpp>
 
-#include "core/cnp/execution/CnpInterpreter.h"
-#include "core/cnp/stencil/CnpStencilFactory.h"
+#include "core/BytecodeTransform/CnpExecutionTrace.h"
+#include "core/Execution/CnpInterpreter.h"
+#include "core/Parsing/Stencil/IO/CnpStencilFactory.h"
+#include "core/Runtime/Runtime.h"
+
+// TODO: Create an entity for this:
+void configure_logging(const cxxopts::ParseResult &parse_result, int argc, char** argv) {
+    loguru::init(argc, argv);
+    loguru::g_preamble = false;
+
+    const auto log_file =
+        parse_result["log"].count()
+        ? parse_result["log"].as<std::string>()
+        : "log.log";
+
+    if (parse_result["verbose"].count()) {
+        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_MAX);
+    } else {
+        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_0);
+    }
+}
+
+std::unique_ptr<CnpStencilCollection> parse_stencils(const cxxopts::ParseResult &parse_result) {
+    const auto recompile = parse_result["recompile"].count()
+        ? parse_result["recompile"].as<bool>()
+        : false;
+
+    auto stencils_factory = CnpStencilFactory();
+    stencils_factory.set_recompile(recompile);
+
+    if (parse_result["stencil-source"].count()) {
+        stencils_factory.set_stencil_directory(parse_result["stencil-source"].as<std::string>());
+    }
+
+    if (parse_result["stencils"].count()) {
+        stencils_factory.set_stencil_binary(parse_result["stencils"].as<std::string>());
+    }
+
+    return stencils_factory.create();
+}
+
+std::unique_ptr<BytecodeFile> parse_bytecode(const cxxopts::ParseResult &parse_result) {
+    if (parse_result["input"].count() != 1) {
+        std::cout << "Input must be provided via -i/--input";
+        throw std::invalid_argument("Bad input source");
+    }
+
+    return BytecodeReader::read_file(parse_result["input"].as<std::string>());
+}
+
+void configure_trace(const cxxopts::ParseResult &parse_result, BytecodeFile &bytecode_file) {
+    const auto trace = parse_result["trace"].count()
+        ? parse_result["trace"].as<bool>()
+        : false;
+
+    if (trace) {
+        CnpExecutionTrace::instrument(bytecode_file);
+    }
+}
 
 int main(int argc, char** argv) {
     cxxopts::Options options("CangJit-Interpreter", "Interpreter for Cangjie Bytecode");
@@ -21,47 +78,12 @@ int main(int argc, char** argv) {
 
     const auto result = options.parse(argc, argv);
 
-    loguru::init(argc, argv);
-    loguru::g_preamble = false;
+    configure_logging(result, argc, argv);
+    const auto stencils = parse_stencils(result);
+    const auto bytecode_file = parse_bytecode(result);
+    configure_trace(result, *bytecode_file.get());
+    const auto codegen_result = CnpCodegen::compile(bytecode_file->get_bytecode(), stencils.get());
+    const auto configured_runtime = Runtime::build(bytecode_file.get(), &codegen_result);
 
-    const auto log_file =
-        result["log"].count()
-        ? result["log"].as<std::string>()
-        : "log.log";
-
-    if (result["verbose"].count()) {
-        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_MAX);
-    } else {
-        loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_0);
-    }
-
-    if (result["input"].count() != 1) {
-        std::cout << "Input must be provided via -i/--input";
-        return 1;
-    }
-
-    const auto bytecode = BytecodeReader::read_file(result["input"].as<std::string>());
-
-    const auto recompile = result["recompile"].count()
-        ? result["recompile"].as<bool>()
-        : false;
-
-    auto stencils_factory = CnpStencilFactory();
-    stencils_factory.set_recompile(recompile);
-
-    if (result["stencil-source"].count()) {
-        stencils_factory.set_stencil_directory(result["stencil-source"].as<std::string>());
-    }
-
-    if (result["stencils"].count()) {
-        stencils_factory.set_stencil_binary(result["stencils"].as<std::string>());
-    }
-
-    auto interpreter = CnpInterpreter(stencils_factory.create());
-    const auto trace = result["trace"].count()
-        ? result["trace"].as<bool>()
-        : false;
-
-    interpreter.set_instrument(trace);
-    interpreter.execute(*bytecode);
+    CnpInterpreter::execute(codegen_result, configured_runtime);
 }

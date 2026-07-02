@@ -4,3 +4,4 @@
 #include "interop.h"
 #include "stack.h"
 #include "variables.h"
+#include "oop.h"

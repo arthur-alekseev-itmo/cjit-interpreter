@@ -1,0 +1,12 @@
+#pragma once
+#include "../RtObjects/RtObject.h"
+
+class RtClassObject : RtObject {
+public:
+    explicit RtClassObject(RtClass* klass) : RtObject(klass), representing_(klass) {}
+    RtObject* get_member(uint32_t field_name) override;
+    RtObject** get_member_ref(uint32_t field_name) override;
+
+private:
+    RtClass* representing_;
+};

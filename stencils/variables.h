@@ -70,9 +70,11 @@ STENCIL_DECL(st_store_closure) {
     STENCIL_END
 }
 
+
 STENCIL_DECL(st_function_address) {
     // Hardcoded
-    void (* STENCIL fn_then)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_1(void (* STENCIL)(uint64_t*, uint64_t*));
-    PUSH(fn_then);
+    PUSH(STENCIL_HOLE_64_1(uint64_t*));
+    uint64_t* (* wrap_function)(uint64_t*, uint64_t*) = STENCIL_HOLE_64_2(uint64_t* (*)(uint64_t*, uint64_t*));
+    stack_top = wrap_function(stack_top, locals);
     STENCIL_END
 }
