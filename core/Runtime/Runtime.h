@@ -1,6 +1,7 @@
 #pragma once
 #include "RtClassHierarchy.h"
 #include "../Codegen/CnpCodegen.h"
+#include "Memory/BumpAllocator.hpp"
 
 class BytecodeFile;
 
@@ -13,6 +14,8 @@ public:
     static RtClassHierarchy* hierarchy();
     static ConfiguredRuntime build(const BytecodeFile* file, const CodegenResult* codegen_result);
     static const uintptr_t instruction_start(std::size_t index);
+
+    static BumpAllocator allocator;
 
 private:
     static std::unique_ptr<RtClassHierarchy> hierarchy_;

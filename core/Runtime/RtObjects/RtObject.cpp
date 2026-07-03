@@ -8,7 +8,7 @@ RtObject* RtObject::get_member(uint32_t field_name) {
     switch (member->type) {
     case MemberType::FIELD: return (*data_)[member->offset];
     case MemberType::CONSTRUCTOR: throw std::runtime_error("TODO: Constructor wrapping");
-    case MemberType::METHOD: return new RtClosureWrapper(Runtime::instruction_start(member->offset), this);
+    case MemberType::METHOD: return Runtime::allocator.construct<RtClosureWrapper>(Runtime::instruction_start(member->offset), this);
     default: throw std::runtime_error("Cannot get a static member");
     }
 }

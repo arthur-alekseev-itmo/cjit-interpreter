@@ -79,3 +79,4 @@ const uintptr_t Runtime::instruction_start(std::size_t index) {
 
 std::unique_ptr<RtClassHierarchy> Runtime::hierarchy_ = nullptr;
 std::vector<uintptr_t> Runtime::instruction_starts_ = {};
+BumpAllocator Runtime::allocator = BumpAllocator();

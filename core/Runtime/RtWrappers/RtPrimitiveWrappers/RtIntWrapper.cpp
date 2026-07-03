@@ -18,7 +18,7 @@ TYPED_MATH_OPERATOR_WITH_UNBOX(int_ge, >=, uint64_t)
 TYPED_MATH_UNARY_OPERATOR_WITH_UNBOX(int_ng, -, uint64_t)
 TYPED_MATH_UNARY_OPERATOR_WITH_UNBOX(int_not, !, uint64_t)
 
-#define RETURN_APPLIED_FUNCTION(function) return new RtClosureWrapper(BUILTIN_ADDRESS(function), reinterpret_cast<RtObject*>(this->value_))
+#define RETURN_APPLIED_FUNCTION(function) return Runtime::allocator.construct<RtClosureWrapper>(BUILTIN_ADDRESS(function), reinterpret_cast<RtObject*>(this->value_))
 
 
 RtObject* RtIntWrapper::get_member(uint32_t field_name) {
