@@ -25,8 +25,10 @@ namespace
             -1,
             0
         ));
-
         assert (result != MAP_FAILED);
+
+        std::memset(result, 0, total_size);
+
         const auto function = reinterpret_cast<cnp_function_ptr>(result + data_size);
         return {result, function, total_size};
     }

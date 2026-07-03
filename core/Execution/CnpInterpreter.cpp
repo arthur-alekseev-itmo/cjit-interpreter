@@ -9,8 +9,8 @@
 
 void CnpInterpreter::execute(const CodegenResult& bytecode, ConfiguredRuntime _)
 {
-    std::uint64_t stack[0x1000] = {};
-    std::uint64_t locals[0x1000] = {};
+    std::uint64_t stack[0x10000] = {};
+    std::uint64_t locals[0x10000] = {};
 
     auto* stack_top = stack;
     auto* locals_top = locals;

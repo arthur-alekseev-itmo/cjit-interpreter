@@ -11,13 +11,12 @@
 
 // TODO: Create an entity for this:
 void configure_logging(const cxxopts::ParseResult &parse_result, int argc, char** argv) {
+    if (parse_result["log"].count() == 0)
+        return;
+
+    const auto log_file = parse_result["log"].as<std::string>();
     loguru::init(argc, argv);
     loguru::g_preamble = false;
-
-    const auto log_file =
-        parse_result["log"].count()
-        ? parse_result["log"].as<std::string>()
-        : "log.log";
 
     if (parse_result["verbose"].count()) {
         loguru::add_file(log_file.c_str(), loguru::Truncate, loguru::Verbosity_MAX);
@@ -81,7 +80,7 @@ int main(int argc, char** argv) {
     configure_logging(result, argc, argv);
     const auto stencils = parse_stencils(result);
     const auto bytecode_file = parse_bytecode(result);
-    configure_trace(result, *bytecode_file.get());
+    configure_trace(result, *bytecode_file);
     const auto codegen_result = CnpCodegen::compile(bytecode_file->get_bytecode(), stencils.get());
     const auto configured_runtime = Runtime::build(bytecode_file.get(), &codegen_result);
 
