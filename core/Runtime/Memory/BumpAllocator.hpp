@@ -5,7 +5,7 @@
 #define PAGE_SIZE 4096
 
 struct BumpAllocatorBlock {
-    uint8_t* mem;
+    void* mem;
     std::size_t size;
 };
 

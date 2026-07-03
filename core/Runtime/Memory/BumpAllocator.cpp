@@ -2,18 +2,31 @@
 #include "BumpAllocator.hpp"
 
 #include <cassert>
+#include <memory>
 #include <sys/mman.h>
 
 void* BumpAllocator::alloc(std::size_t size) {
-    const auto aligned = (size + 15) & ~15;
+    constexpr auto alignment = alignof(std::max_align_t);
+    void* current_ptr = static_cast<uint8_t*>(mem_start_.mem) + offset_;
+    std::size_t remaining_space = mem_start_.size - offset_;
 
-    if (aligned + offset_ >= mem_start_.size)
+    void* aligned_ptr =
+        mem_start_.size > offset_
+        ? std::align(alignment, size, current_ptr, remaining_space)
+        : nullptr;
+
+    if (!aligned_ptr) {
         allocate_next();
 
-    const auto allocated = mem_start_.mem + offset_;
-    offset_ += aligned;
+        current_ptr = static_cast<uint8_t*>(mem_start_.mem) + offset_;
+        remaining_space = mem_start_.size - offset_;
+        aligned_ptr = std::align(alignment, size, current_ptr, remaining_space);
 
-    return allocated;
+        if (!aligned_ptr) return nullptr;
+    }
+
+    offset_ += size;
+    return aligned_ptr;
 }
 
 void BumpAllocator::allocate_next() {
