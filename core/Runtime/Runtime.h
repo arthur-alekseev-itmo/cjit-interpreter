@@ -15,7 +15,7 @@ public:
     static ConfiguredRuntime build(const BytecodeFile* file, const CodegenResult* codegen_result);
     static const uintptr_t instruction_start(std::size_t index);
 
-    static BumpAllocator allocator;
+    static BumpAllocator<> allocator;
 
 private:
     static std::unique_ptr<RtClassHierarchy> hierarchy_;

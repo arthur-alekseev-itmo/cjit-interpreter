@@ -25,6 +25,6 @@ const uintptr_t RtClosureWrapper::get_function() const {
 }
 
 
-const std::vector<const RtObject*> RtClosureWrapper::get_arguments() const {
-    return this->arguments_;
+const std::vector<const RtObject*, BumpAllocator<const RtObject*>>* RtClosureWrapper::get_arguments() const {
+    return &this->arguments_;
 }

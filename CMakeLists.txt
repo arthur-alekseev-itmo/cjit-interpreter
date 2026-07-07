@@ -149,6 +149,8 @@ add_executable(cjit_interpreter main.cpp
         core/Parsing/Stencil/Cache/StencilCacheFile.hpp
         core/Runtime/Memory/BumpAllocator.cpp
         core/Runtime/Memory/BumpAllocator.hpp
+        core/Runtime/RtObjects/ClassVTable.cpp
+        core/Runtime/RtObjects/ClassVTable.hpp
 )
 
 target_link_libraries(cjit_interpreter LIEF::LIEF)
