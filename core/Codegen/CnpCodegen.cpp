@@ -24,7 +24,7 @@
 #define BUILTIN_ALIAS_1ARG(builtin_index) {                                                         \
     const auto fn_address = RtBuiltins::get_function(static_cast<std::size_t>(builtin_index));      \
     COPY_AND_PATCH(                                                                                 \
-        EXTRACT_ARGUMENT_PTR(uint64_t, 1),                                                          \
+        EXTRACT_ARGUMENT_PTR(uint32_t, 1),                                                          \
         CnpPatchValue(sizeof(intptr_t), reinterpret_cast<const uint8_t*>(&fn_address))              \
     );                                                                                              \
     ADVANCE;                                                                                        \

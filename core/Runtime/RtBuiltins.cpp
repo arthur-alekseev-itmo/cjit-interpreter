@@ -13,17 +13,15 @@
 #include "RtWrappers/RtPrimitiveWrappers/RtIntWrapper.h"
 #include "RtWrappers/RtPrimitiveWrappers/RtWrapperTypes.h"
 
-BUILTIN_IMPL(print_int)
-{
+BUILTIN_IMPL(print_int) {
     const uint64_t raw_value = *(--stack_top);
-    const auto object = reinterpret_cast<RtIntWrapper*>(raw_value);
-    std::cout << *object->get_wrapped_value_addr() << std::endl;
+    std::cout << raw_value << std::endl;
     return stack_top;
 }
 
 BUILTIN_IMPL(wrap_function_address) {
     POP(address);
-    const auto wrapper = new RtFunctionWrapper(reinterpret_cast<uint8_t*>(address));
+    const auto wrapper = Runtime::allocator.construct<RtFunctionWrapper>(reinterpret_cast<uint8_t*>(address));
     PUSH(wrapper);
     VLOG_F(1, "Wrapped function address: %llu at: %p", address, wrapper);
     return stack_top;
@@ -32,7 +30,7 @@ BUILTIN_IMPL(wrap_function_address) {
 BUILTIN_IMPL(load_class) {
     POP(class_idx);
     const auto klass = Runtime::hierarchy()->get_class(class_idx);
-    const auto wrapper = new RtClassObject(klass);
+    const auto wrapper = Runtime::allocator.construct<RtClassObject>(klass);
     PUSH(wrapper);
     VLOG_F(1, "Loaded class: %llu at: %p", class_idx, wrapper);
     return stack_top;
@@ -67,7 +65,7 @@ BUILTIN_IMPL(prepare_call_object) {
         throw std::runtime_error("Cannot call an object");
     case KIND_CLOSURE: {
             const auto closure = reinterpret_cast<RtClosureWrapper*>(object);
-            for (const auto arg : closure->get_arguments()) {
+            for (const auto arg : *closure->get_arguments()) {
                 PUSH(arg);
             }
             PUSH(closure->get_function());
@@ -82,7 +80,7 @@ BUILTIN_IMPL(prepare_call_object) {
         }
     case KIND_CTOR: {
             const auto ctor = reinterpret_cast<RtConstructorWrapper*>(object);
-            const auto new_instance = new RtObject(ctor->get_constructed_class());
+            const auto new_instance = Runtime::allocator.construct<RtObject>(ctor->get_constructed_class());
             PUSH(new_instance);
             PUSH(ctor->get_function());
             VLOG_F(1, "Constructor call (%p), new instance is: %p", ctor, new_instance);
@@ -104,14 +102,14 @@ BUILTIN_IMPL(box) {
     POP(target);
     switch (wrapper_ty_id) {
     case RtWrapperType::IntWrapper: {
-            const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
+            const auto wrapper =  Runtime::allocator.construct<RtIntWrapper>(static_cast<uint64_t>(target));
             VLOG_F(1, "Boxing an integer %llu, result is: %p", target, wrapper);
             PUSH(wrapper);
             
             return stack_top;
         }
     case RtWrapperType::BoolWrapper: {
-            const auto wrapper = new RtIntWrapper(static_cast<uint64_t>(target));
+            const auto wrapper =  Runtime::allocator.construct<RtIntWrapper>(static_cast<uint64_t>(target));
             VLOG_F(1, "Boxing a boolean %llu, result is: %p", target, wrapper);
             PUSH(wrapper);
             return stack_top;
@@ -128,7 +126,7 @@ BUILTIN_IMPL(cast) {
     POP(raw_target);
     const auto klass = Runtime::hierarchy()->get_class(class_id);
     const auto obj = reinterpret_cast<RtObject*>(raw_target);
-    const auto result = new RtObject(klass, obj->get_data());
+    const auto result =  Runtime::allocator.construct<RtObject>(klass, obj->get_data());
     PUSH(result);
     VLOG_F(1, "Casting %p from %d to %llu, result is: %p", reinterpret_cast<void*>(obj), obj->get_class()->get_id(), class_id, result);
     return stack_top;
@@ -137,7 +135,7 @@ BUILTIN_IMPL(cast) {
 BUILTIN_IMPL(new_object) {
     POP(class_id);
     const auto klass = Runtime::hierarchy()->get_class(class_id);
-    const auto object = new RtObject(klass);
+    const auto object =  Runtime::allocator.construct<RtObject>(klass);
     VLOG_F(1, "Creating new object via NEW of type %llu, instance: %p", class_id, object);
     PUSH(object);
     return stack_top;
@@ -148,7 +146,7 @@ BUILTIN_IMPL(init) {
     using FuncType = uint64_t* (__attribute__((preserve_none)) *)(uint64_t*, uint64_t*);
     for (auto &klass : Runtime::hierarchy()->get_classes()) {
         VLOG_F(1, "Initializing class: %d", klass->get_id());
-        const auto class_object = new RtClassObject(klass);
+        const auto class_object = Runtime::allocator.construct<RtClassObject>(klass);
         PUSH(class_object);
         const auto clinit_method = klass->get_member(15);
         const auto func_offset = Runtime::instruction_start(clinit_method->offset);
@@ -156,6 +154,7 @@ BUILTIN_IMPL(init) {
         func(stack_top, locals);
         POP(_);
     }
+    VLOG_F(1, "Finished static initialization");
     return stack_top;
 }
 
